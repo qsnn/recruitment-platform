@@ -28,7 +28,7 @@
         const user = AuthService.getCurrentUser();
 
         if (user) {
-            const displayName = user.nickname || user.username || '用户';
+            const displayName = user.username || '用户';
 
             userActions.innerHTML = `
                 <div class="user-info">

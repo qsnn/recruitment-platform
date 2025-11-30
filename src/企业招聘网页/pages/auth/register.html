@@ -3,7 +3,9 @@
         <div class="auth-card">
             <h2>用户注册</h2>
 
+            <!-- html -->
             <form id="register-form" class="auth-form">
+                <!-- 邮箱 -->
                 <div class="form-group">
                     <label for="reg-email">邮箱地址</label>
                     <input
@@ -17,6 +19,49 @@
                     <div class="error-message" id="reg-email-error"></div>
                 </div>
 
+                <!-- 手机号 -->
+                <div class="form-group">
+                    <label for="reg-phone">手机号</label>
+                    <input
+                            type="text"
+                            id="reg-phone"
+                            name="phone"
+                            placeholder="请输入手机号"
+                            class="form-control"
+                            required
+                    >
+                    <div class="error-message" id="reg-phone-error"></div>
+                </div>
+
+                <!-- 用户名 -->
+                <div class="form-group">
+                    <label for="reg-username">用户名</label>
+                    <input
+                            type="text"
+                            id="reg-username"
+                            name="username"
+                            placeholder="请输入用户名"
+                            class="form-control"
+                            required
+                    >
+                    <div class="error-message" id="reg-username-error"></div>
+                </div>
+
+                <!-- 真实姓名 -->
+                <div class="form-group">
+                    <label for="reg-realname">真实姓名</label>
+                    <input
+                            type="text"
+                            id="reg-realname"
+                            name="realname"
+                            placeholder="请输入真实姓名"
+                            class="form-control"
+                            required
+                    >
+                    <div class="error-message" id="reg-realname-error"></div>
+                </div>
+
+                <!-- 密码 -->
                 <div class="form-group">
                     <label for="reg-password">密码</label>
                     <input
@@ -33,6 +78,7 @@
                     </div>
                 </div>
 
+                <!-- 确认密码 -->
                 <div class="form-group">
                     <label for="confirm-password">确认密码</label>
                     <input
@@ -46,26 +92,9 @@
                     <div class="error-message" id="confirm-error"></div>
                 </div>
 
-                <div class="form-group">
-                    <label for="verification-code">验证码</label>
-                    <div class="code-input-group">
-                        <input
-                                type="text"
-                                id="verification-code"
-                                name="code"
-                                placeholder="请输入验证码"
-                                class="form-control"
-                                required
-                        >
-                        <button type="button" class="btn btn-outline btn-countdown" id="send-code-btn">
-                            发送验证码
-                        </button>
-                    </div>
-                    <div class="error-message" id="code-error"></div>
-                </div>
-
                 <button type="submit" class="btn btn-primary btn-block">注册</button>
             </form>
+
 
             <div class="auth-footer">
                 <p>已有账号？ <a href="#auth/login">立即登录</a></p>
@@ -74,154 +103,3 @@
     </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const registerForm = document.getElementById('register-form');
-        const emailInput = document.getElementById('reg-email');
-        const passwordInput = document.getElementById('reg-password');
-        const confirmInput = document.getElementById('confirm-password');
-        const codeInput = document.getElementById('verification-code');
-        const sendCodeBtn = document.getElementById('send-code-btn');
-        const strengthBar = document.getElementById('password-strength-bar');
-
-        const emailError = document.getElementById('reg-email-error');
-        const passwordError = document.getElementById('reg-password-error');
-        const confirmError = document.getElementById('confirm-error');
-        const codeError = document.getElementById('code-error');
-
-        function checkPasswordStrength(password) {
-            let strength = 0;
-            if (password.length >= 8) strength++;
-            if (/[a-z]/.test(password)) strength++;
-            if (/[A-Z]/.test(password)) strength++;
-            if (/[0-9]/.test(password)) strength++;
-            if (/[^a-zA-Z0-9]/.test(password)) strength++;
-            return strength;
-        }
-
-        passwordInput.addEventListener('input', function() {
-            const strength = checkPasswordStrength(this.value);
-            strengthBar.className = 'strength-bar';
-            if (strength <= 2) {
-                strengthBar.classList.add('strength-weak');
-            } else if (strength <= 4) {
-                strengthBar.classList.add('strength-medium');
-            } else {
-                strengthBar.classList.add('strength-strong');
-            }
-        });
-
-        sendCodeBtn.addEventListener('click', function() {
-            const email = emailInput.value;
-
-            if (!validateEmail(email)) {
-                emailError.textContent = '请输入有效的邮箱地址';
-                emailError.classList.add('show');
-                return;
-            }
-
-            let time = 60;
-            sendCodeBtn.disabled = true;
-
-            const timer = setInterval(() => {
-                sendCodeBtn.textContent = `${time}秒后重发`;
-                time--;
-                if (time < 0) {
-                    clearInterval(timer);
-                    sendCodeBtn.disabled = false;
-                    sendCodeBtn.textContent = '发送验证码';
-                }
-            }, 1000);
-
-            AuthService.sendVerificationCode(email);
-        });
-
-        confirmInput.addEventListener('blur', function() {
-            if (this.value !== passwordInput.value) {
-                confirmError.textContent = '两次输入的密码不一致';
-                confirmError.classList.add('show');
-                this.classList.add('error');
-            } else {
-                confirmError.classList.remove('show');
-                this.classList.remove('error');
-            }
-        });
-
-        registerForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            // 清空旧错误
-            emailError.textContent = '';
-            emailError.classList.remove('show');
-            passwordError.textContent = '';
-            passwordError.classList.remove('show');
-            confirmError.textContent = '';
-            confirmError.classList.remove('show');
-            codeError.textContent = '';
-            codeError.classList.remove('show');
-
-            const email = emailInput.value;
-            const password = passwordInput.value;
-            const confirmPassword = confirmInput.value;
-            const code = codeInput.value;
-
-            let isValid = true;
-
-            if (!validateEmail(email)) {
-                emailError.textContent = '请输入有效的邮箱地址';
-                emailError.classList.add('show');
-                isValid = false;
-            }
-
-            if (checkPasswordStrength(password) < 3) {
-                passwordError.textContent = '密码强度不足，请包含字母和数字';
-                passwordError.classList.add('show');
-                isValid = false;
-            }
-
-            if (password !== confirmPassword) {
-                confirmError.textContent = '两次输入的密码不一致';
-                confirmError.classList.add('show');
-                isValid = false;
-            }
-
-            if (!code) {
-                codeError.textContent = '请输入验证码';
-                codeError.classList.add('show');
-                isValid = false;
-            }
-
-            if (!isValid) return;
-
-            // 构造后端期望的注册对象
-            const formData = {
-                username: email,   // 这里用邮箱作为用户名，可根据需求调整
-                password: password,
-                phone: null,
-                email: email,
-                nickname: email.split('@')[0],
-                userType: null,
-                companyId: null
-            };
-
-            try {
-                const result = await AuthService.register(formData);
-
-                // result 形如: { code, message, data }
-                if (result.code === 200) {
-                    alert(result.message || '注册成功！请登录');
-                    Router.navigateTo('#auth/login');
-                } else {
-                    alert(result.message || '注册失败，请稍后重试');
-                }
-            } catch (error) {
-                alert(error.message || '注册失败，请稍后重试');
-            }
-        });
-
-        function validateEmail(email) {
-            const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return regex.test(email);
-        }
-    });
-</script>

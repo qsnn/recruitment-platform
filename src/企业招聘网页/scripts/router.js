@@ -78,7 +78,10 @@ const Router = {
             if (hash === 'auth/login' && typeof LoginPage !== 'undefined') {
                 LoginPage.init();
             }
-
+            // 注册页
+            if (hash === 'auth/register' && typeof RegisterPage !== 'undefined') {
+                RegisterPage.init();
+            }
             // 更新导航激活状态
             this.updateActiveNav();
 

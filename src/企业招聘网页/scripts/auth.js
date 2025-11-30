@@ -56,7 +56,6 @@ const AuthService = {
             const currentUser = {
                 userId: userData.userId,
                 username: userData.username,
-                nickname: userData.nickname || userData.username,
                 phone: userData.phone,
                 email: userData.email,
                 status: userData.status,
