@@ -1,60 +1,13 @@
-<div class="auth-page">
-    <div class="auth-container">
-        <div class="auth-card">
-            <h2>用户登录</h2>
-
-            <form id="login-form" class="auth-form">
-                <div class="form-group">
-                    <label for="login-username">用户名</label>
-                    <input
-                            type="text"
-                            id="login-username"
-                            name="username"
-                            placeholder="请输入用户名"
-                            class="form-control"
-                            required
-                    >
-                    <div class="error-message" id="login-username-error"></div>
-                </div>
-
-                <div class="form-group">
-                    <label for="login-password">密码</label>
-                    <input
-                            type="password"
-                            id="login-password"
-                            name="password"
-                            placeholder="请输入密码"
-                            class="form-control"
-                            required
-                    >
-                    <div class="error-message" id="login-password-error"></div>
-                </div>
-
-                <div class="form-options">
-                    <label class="remember-me">
-                        <input type="checkbox" name="remember"> 记住我
-                    </label>
-                    <a href="#auth/reset-password" class="forgot-link">忘记密码？</a>
-                </div>
-
-                <button type="submit" class="btn btn-primary btn-block">登录</button>
-                <!-- 按钮后面增加一个全局错误提示 -->
-                <div class="error-message" id="login-global-error" style="margin-top:8px;color:#e74c3c;"></div>
-            </form>
-
-            <div class="auth-footer">
-                <p>还没有账号？ <a href="#auth/register">立即注册</a></p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- html -->
-<!-- 表单结构保持不变，这里省略，只展示脚本部分 -->
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
+// javascript
+// scripts/login-page.js
+const LoginPage = {
+    init() {
         const loginForm = document.getElementById('login-form');
+        if (!loginForm) {
+            console.warn('登录表单未找到，可能页面还没渲染好');
+            return;
+        }
+
         const usernameInput = document.getElementById('login-username');
         const passwordInput = document.getElementById('login-password');
         const usernameError = document.getElementById('login-username-error');
@@ -89,6 +42,7 @@
             } else {
                 passwordError.textContent = '';
                 passwordError.classList.remove('show');
+                this.classList.remove('show');
                 this.classList.remove('error');
             }
         });
@@ -144,5 +98,5 @@
                 console.error('登录失败:', msg);
             }
         });
-    });
-</script>
+    }
+};

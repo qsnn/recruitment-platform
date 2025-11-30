@@ -41,7 +41,8 @@ const Router = {
         }
     },
 
-    // 处理路由变化
+    // javascript
+// scripts/router.js 中 handleRouteChange 的结尾部分
     async handleRouteChange() {
         const hash = window.location.hash.slice(1) || 'home';
         this.currentRoute = hash;
@@ -50,35 +51,33 @@ const Router = {
 
         try {
             let pageHtml = '';
-            let pageScript = '';
 
-            // 根据路由加载不同页面
             switch (true) {
                 case hash === 'home':
                     pageHtml = this.getHomePage();
                     break;
-
                 case hash.startsWith('auth/'):
                     pageHtml = await this.loadAuthPage(hash);
                     break;
-
                 case hash.startsWith('candidate/'):
                     pageHtml = await this.loadCandidatePage(hash);
                     break;
-
                 case hash.startsWith('employer/'):
                     pageHtml = await this.loadEmployerPage(hash);
                     break;
-
                 case hash.startsWith('admin/'):
                     pageHtml = this.getAdminPage(hash);
                     break;
-
                 default:
                     pageHtml = this.getNotFoundPage();
             }
 
             mainContent.innerHTML = pageHtml;
+
+            // \[新增\] 登录页加载完后，初始化表单事件
+            if (hash === 'auth/login' && typeof LoginPage !== 'undefined') {
+                LoginPage.init();
+            }
 
             // 更新导航激活状态
             this.updateActiveNav();
@@ -88,6 +87,7 @@ const Router = {
             mainContent.innerHTML = this.getErrorPage();
         }
     },
+
 
     // 加载认证页面
     async loadAuthPage(route) {
