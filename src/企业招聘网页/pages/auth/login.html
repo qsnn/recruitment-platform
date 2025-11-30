@@ -5,16 +5,16 @@
 
             <form id="login-form" class="auth-form">
                 <div class="form-group">
-                    <label for="login-email">邮箱地址</label>
+                    <label for="login-username">用户名</label>
                     <input
-                            type="email"
-                            id="login-email"
-                            name="email"
-                            placeholder="请输入邮箱地址"
+                            type="text"
+                            id="login-username"
+                            name="username"
+                            placeholder="请输入用户名"
                             class="form-control"
                             required
                     >
-                    <div class="error-message" id="login-email-error"></div>
+                    <div class="error-message" id="login-username-error"></div>
                 </div>
 
                 <div class="form-group">
@@ -48,18 +48,16 @@
 </div>
 
 <script>
-    // 登录表单验证和提交
     document.addEventListener('DOMContentLoaded', function() {
         const loginForm = document.getElementById('login-form');
-        const emailInput = document.getElementById('login-email');
+        const usernameInput = document.getElementById('login-username');
         const passwordInput = document.getElementById('login-password');
-        const emailError = document.getElementById('login-email-error');
+        const usernameError = document.getElementById('login-username-error');
         const passwordError = document.getElementById('login-password-error');
 
-        // 邮箱验证
-        function validateEmail(email) {
-            const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return regex.test(email);
+        // 用户名验证
+        function validateUsername(username) {
+            return username.length >= 3 && username.length <= 20;
         }
 
         // 密码验证
@@ -68,13 +66,13 @@
         }
 
         // 实时验证
-        emailInput.addEventListener('blur', function() {
-            if (!validateEmail(this.value)) {
-                emailError.textContent = '请输入有效的邮箱地址';
-                emailError.classList.add('show');
+        usernameInput.addEventListener('blur', function() {
+            if (!validateUsername(this.value)) {
+                usernameError.textContent = '用户名格式不正确';
+                usernameError.classList.add('show');
                 this.classList.add('error');
             } else {
-                emailError.classList.remove('show');
+                usernameError.classList.remove('show');
                 this.classList.remove('error');
             }
         });
@@ -94,14 +92,14 @@
         loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            const email = emailInput.value;
+            const username = usernameInput.value;
             const password = passwordInput.value;
 
             // 前端验证
-            if (!validateEmail(email)) {
-                emailError.textContent = '请输入有效的邮箱地址';
-                emailError.classList.add('show');
-                emailInput.classList.add('error');
+            if (!validateUsername(username)) {
+                usernameError.textContent = '请输入有效的用户名';
+                usernameError.classList.add('show');
+                usernameInput.classList.add('error');
                 return;
             }
 
@@ -115,7 +113,7 @@
             // 调用登录API
             try {
                 const response = await AuthService.login({
-                    email: email,
+                    username: username,
                     password: password
                 });
 
@@ -124,7 +122,7 @@
 
             } catch (error) {
                 // 显示错误信息
-                passwordError.textContent = '登录失败，请检查邮箱和密码';
+                passwordError.textContent = '登录失败，请检查用户名和密码';
                 passwordError.classList.add('show');
             }
         });

@@ -5,16 +5,16 @@
 
             <form id="register-form" class="auth-form">
                 <div class="form-group">
-                    <label for="reg-email">邮箱地址</label>
+                    <label for="reg-username">用户名</label>
                     <input
-                            type="email"
-                            id="reg-email"
-                            name="email"
-                            placeholder="请输入邮箱地址"
+                            type="text"
+                            id="reg-username"
+                            name="username"
+                            placeholder="请输入用户名（3-20位字符）"
                             class="form-control"
                             required
                     >
-                    <div class="error-message" id="reg-email-error"></div>
+                    <div class="error-message" id="reg-username-error"></div>
                 </div>
 
                 <div class="form-group">
@@ -23,7 +23,7 @@
                             type="password"
                             id="reg-password"
                             name="password"
-                            placeholder="至少8位字符，包含字母和数字"
+                            placeholder="至少6位字符"
                             class="form-control"
                             required
                     >
@@ -46,24 +46,6 @@
                     <div class="error-message" id="confirm-error"></div>
                 </div>
 
-                <div class="form-group">
-                    <label for="verification-code">验证码</label>
-                    <div class="code-input-group">
-                        <input
-                                type="text"
-                                id="verification-code"
-                                name="code"
-                                placeholder="请输入验证码"
-                                class="form-control"
-                                required
-                        >
-                        <button type="button" class="btn btn-outline btn-countdown" id="send-code-btn">
-                            发送验证码
-                        </button>
-                    </div>
-                    <div class="error-message" id="code-error"></div>
-                </div>
-
                 <button type="submit" class="btn btn-primary btn-block">注册</button>
             </form>
 
@@ -77,23 +59,34 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const registerForm = document.getElementById('register-form');
-        const emailInput = document.getElementById('reg-email');
+        const usernameInput = document.getElementById('reg-username');
         const passwordInput = document.getElementById('reg-password');
         const confirmInput = document.getElementById('confirm-password');
-        const codeInput = document.getElementById('verification-code');
-        const sendCodeBtn = document.getElementById('send-code-btn');
         const strengthBar = document.getElementById('password-strength-bar');
 
-        const emailError = document.getElementById('reg-email-error');
+        const usernameError = document.getElementById('reg-username-error');
         const passwordError = document.getElementById('reg-password-error');
         const confirmError = document.getElementById('confirm-error');
-        const codeError = document.getElementById('code-error');
+
+        // 用户名验证
+        function validateUsername(username) {
+            if (username.length < 3) {
+                return '用户名至少3位字符';
+            }
+            if (username.length > 20) {
+                return '用户名不能超过20位字符';
+            }
+            if (!/^[a-zA-Z0-9_\u4e00-\u9fa5]+$/.test(username)) {
+                return '用户名只能包含字母、数字、下划线和中文字符';
+            }
+            return null;
+        }
 
         // 密码强度检测
         function checkPasswordStrength(password) {
             let strength = 0;
 
-            if (password.length >= 8) strength++;
+            if (password.length >= 6) strength++;
             if (/[a-z]/.test(password)) strength++;
             if (/[A-Z]/.test(password)) strength++;
             if (/[0-9]/.test(password)) strength++;
@@ -107,42 +100,42 @@
             const strength = checkPasswordStrength(this.value);
             strengthBar.className = 'strength-bar';
 
-            if (strength <= 2) {
+            if (this.value.length === 0) {
+                return;
+            }
+
+            if (strength <= 1) {
                 strengthBar.classList.add('strength-weak');
-            } else if (strength <= 4) {
+            } else if (strength <= 3) {
                 strengthBar.classList.add('strength-medium');
             } else {
                 strengthBar.classList.add('strength-strong');
             }
         });
 
-        // 发送验证码
-        sendCodeBtn.addEventListener('click', function() {
-            const email = emailInput.value;
-
-            if (!validateEmail(email)) {
-                emailError.textContent = '请输入有效的邮箱地址';
-                emailError.classList.add('show');
-                return;
+        // 实时验证用户名
+        usernameInput.addEventListener('blur', function() {
+            const error = validateUsername(this.value);
+            if (error) {
+                usernameError.textContent = error;
+                usernameError.classList.add('show');
+                this.classList.add('error');
+            } else {
+                usernameError.classList.remove('show');
+                this.classList.remove('error');
             }
+        });
 
-            // 开始倒计时
-            let time = 60;
-            sendCodeBtn.disabled = true;
-
-            const timer = setInterval(() => {
-                sendCodeBtn.textContent = `${time}秒后重发`;
-                time--;
-
-                if (time < 0) {
-                    clearInterval(timer);
-                    sendCodeBtn.disabled = false;
-                    sendCodeBtn.textContent = '发送验证码';
-                }
-            }, 1000);
-
-            // 调用发送验证码API
-            AuthService.sendVerificationCode(email);
+        // 实时验证密码
+        passwordInput.addEventListener('blur', function() {
+            if (this.value.length < 6) {
+                passwordError.textContent = '密码长度至少6位';
+                passwordError.classList.add('show');
+                this.classList.add('error');
+            } else {
+                passwordError.classList.remove('show');
+                this.classList.remove('error');
+            }
         });
 
         // 确认密码验证
@@ -162,36 +155,33 @@
             e.preventDefault();
 
             const formData = {
-                email: emailInput.value,
+                username: usernameInput.value,
                 password: passwordInput.value,
-                confirmPassword: confirmInput.value,
-                code: codeInput.value
+                confirmPassword: confirmInput.value
             };
 
             // 前端验证
             let isValid = true;
 
-            if (!validateEmail(formData.email)) {
-                emailError.textContent = '请输入有效的邮箱地址';
-                emailError.classList.add('show');
+            const usernameErrorMsg = validateUsername(formData.username);
+            if (usernameErrorMsg) {
+                usernameError.textContent = usernameErrorMsg;
+                usernameError.classList.add('show');
+                usernameInput.classList.add('error');
                 isValid = false;
             }
 
-            if (checkPasswordStrength(formData.password) < 3) {
-                passwordError.textContent = '密码强度不足，请包含字母和数字';
+            if (formData.password.length < 6) {
+                passwordError.textContent = '密码长度至少6位';
                 passwordError.classList.add('show');
+                passwordInput.classList.add('error');
                 isValid = false;
             }
 
             if (formData.password !== formData.confirmPassword) {
                 confirmError.textContent = '两次输入的密码不一致';
                 confirmError.classList.add('show');
-                isValid = false;
-            }
-
-            if (!formData.code) {
-                codeError.textContent = '请输入验证码';
-                codeError.classList.add('show');
+                confirmInput.classList.add('error');
                 isValid = false;
             }
 
@@ -206,10 +196,5 @@
                 alert('注册失败：' + error.message);
             }
         });
-
-        function validateEmail(email) {
-            const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return regex.test(email);
-        }
     });
 </script>
