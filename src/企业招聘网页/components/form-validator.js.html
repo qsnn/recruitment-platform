@@ -1,0 +1,277 @@
+// 表单验证工具类
+const FormValidator = {
+// 验证规则
+rules: {
+required: {
+test: (value) => value && value.toString().trim().length > 0,
+message: '此字段为必填项'
+},
+email: {
+test: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+message: '请输入有效的邮箱地址'
+},
+phone: {
+test: (value) => /^1[3-9]\d{9}$/.test(value),
+message: '请输入有效的手机号码'
+},
+minLength: (min) => ({
+test: (value) => value && value.toString().length >= min,
+message: `长度不能少于 ${min} 个字符`
+}),
+maxLength: (max) => ({
+test: (value) => !value || value.toString().length <= max,
+message: `长度不能超过 ${max} 个字符`
+}),
+password: {
+test: (value) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^]{8,}$/.test(value),
+message: '密码必须包含大小写字母和数字，且长度至少8位'
+},
+confirmPassword: (passwordField) => ({
+test: (value, formData) => value === formData[passwordField],
+message: '两次输入的密码不一致'
+}),
+number: {
+test: (value) => !isNaN(parseFloat(value)) && isFinite(value),
+message: '请输入有效的数字'
+},
+integer: {
+test: (value) => /^\d+$/.test(value),
+message: '请输入整数'
+},
+url: {
+test: (value) => /^https?:\/\/.+\..+/.test(value),
+message: '请输入有效的URL地址'
+}
+},
+
+// 验证单个字段
+validateField(fieldName, value, rules, formData = {}) {
+for (const rule of rules) {
+let ruleObj, ruleName;
+
+if (typeof rule === 'string') {
+ruleObj = this.rules[rule];
+ruleName = rule;
+} else {
+ruleObj = rule;
+ruleName = rule.name || 'custom';
+}
+
+if (ruleObj && !ruleObj.test(value, formData)) {
+return {
+isValid: false,
+field: fieldName,
+rule: ruleName,
+message: ruleObj.message
+};
+}
+}
+
+return { isValid: true, field: fieldName };
+},
+
+// 验证整个表单
+validateForm(formData, validationRules) {
+const errors = [];
+const results = {};
+
+for (const [fieldName, rules] of Object.entries(validationRules)) {
+const value = formData[fieldName];
+const result = this.validateField(fieldName, value, rules, formData);
+
+results[fieldName] = result;
+if (!result.isValid) {
+errors.push(result);
+}
+}
+
+return {
+isValid: errors.length === 0,
+errors: errors,
+results: results
+};
+},
+
+// 实时验证（用于输入框的blur事件）
+setupRealTimeValidation(formElement, validationRules) {
+const inputs = formElement.querySelectorAll('input, select, textarea');
+
+inputs.forEach(input => {
+const fieldName = input.name;
+const rules = validationRules[fieldName];
+
+if (!rules) return;
+
+// blur时验证
+input.addEventListener('blur', () => {
+const value = input.value;
+const formData = this.getFormData(formElement);
+const result = this.validateField(fieldName, value, rules, formData);
+
+this.displayFieldValidation(input, result);
+});
+
+// 输入时清除错误状态
+input.addEventListener('input', () => {
+this.clearFieldValidation(input);
+});
+});
+},
+
+// 显示字段验证结果
+displayFieldValidation(input, result) {
+this.clearFieldValidation(input);
+
+if (!result.isValid) {
+input.classList.add('error');
+
+// 创建或更新错误消息
+let errorElement = input.parentNode.querySelector('.error-message');
+if (!errorElement) {
+errorElement = document.createElement('div');
+errorElement.className = 'error-message';
+input.parentNode.appendChild(errorElement);
+}
+
+errorElement.textContent = result.message;
+errorElement.classList.add('show');
+}
+},
+
+// 清除字段验证状态
+clearFieldValidation(input) {
+input.classList.remove('error');
+
+const errorElement = input.parentNode.querySelector('.error-message');
+if (errorElement) {
+errorElement.classList.remove('show');
+}
+},
+
+// 获取表单数据
+getFormData(formElement) {
+const formData = new FormData(formElement);
+const data = {};
+
+for (const [key, value] of formData.entries()) {
+data[key] = value;
+}
+
+return data;
+},
+
+// 密码强度检查
+checkPasswordStrength(password) {
+if (!password) return { score: 0, level: 'empty', text: '' };
+
+let score = 0;
+const suggestions = [];
+
+// 长度检查
+if (password.length >= 8) score++;
+else suggestions.push('至少8个字符');
+
+// 小写字母
+if (/[a-z]/.test(password)) score++;
+else suggestions.push('包含小写字母');
+
+// 大写字母
+if (/[A-Z]/.test(password)) score++;
+else suggestions.push('包含大写字母');
+
+// 数字
+if (/[0-9]/.test(password)) score++;
+else suggestions.push('包含数字');
+
+// 特殊字符
+if (/[^a-zA-Z0-9]/.test(password)) score++;
+else suggestions.push('包含特殊字符');
+
+// 确定强度等级
+let level, text;
+if (score <= 2) {
+level = 'weak';
+text = '弱';
+} else if (score <= 4) {
+level = 'medium';
+text = '中';
+} else {
+level = 'strong';
+text = '强';
+}
+
+return {
+score: score,
+level: level,
+text: text,
+suggestions: suggestions
+};
+},
+
+// 显示密码强度
+displayPasswordStrength(password, strengthElement) {
+const strength = this.checkPasswordStrength(password);
+
+strengthElement.className = 'password-strength';
+strengthElement.innerHTML = `
+<div class="strength-bar ${strength.level}"></div>
+<div class="strength-text">强度: ${strength.text}</div>
+${strength.suggestions.length > 0 ?
+`<div class="strength-suggestions">建议: ${strength.suggestions.join('，')}</div>` : ''
+}
+`;
+},
+
+// 通用表单提交处理
+handleFormSubmit(formElement, validationRules, onSubmit) {
+formElement.addEventListener('submit', async (e) => {
+e.preventDefault();
+
+const formData = this.getFormData(formElement);
+const validation = this.validateForm(formData, validationRules);
+
+// 清除所有错误状态
+this.clearAllValidation(formElement);
+
+if (!validation.isValid) {
+// 显示所有错误
+validation.errors.forEach(error => {
+const input = formElement.querySelector(`[name="${error.field}"]`);
+if (input) {
+this.displayFieldValidation(input, error);
+}
+});
+return;
+}
+
+// 验证通过，调用提交回调
+if (onSubmit) {
+await onSubmit(formData, formElement);
+}
+});
+},
+
+// 清除所有验证状态
+clearAllValidation(formElement) {
+const inputs = formElement.querySelectorAll('input, select, textarea');
+inputs.forEach(input => this.clearFieldValidation(input));
+}
+};
+
+// 使用示例：
+/*
+// 定义验证规则
+const loginRules = {
+email: ['required', 'email'],
+password: ['required', FormValidator.rules.minLength(6)]
+};
+
+// 设置表单验证
+FormValidator.setupRealTimeValidation(loginForm, loginRules);
+
+// 处理表单提交
+FormValidator.handleFormSubmit(loginForm, loginRules, async (formData) => {
+// 处理登录逻辑
+console.log('表单数据:', formData);
+});
+*/

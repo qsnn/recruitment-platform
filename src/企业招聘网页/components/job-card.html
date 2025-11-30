@@ -1,0 +1,44 @@
+<div class="job-card" onclick="Router.navigateTo('#candidate/job-detail/' + job.id)">
+    <div class="job-card-header">
+        <h3 class="job-title">{{title}}</h3>
+        <span class="salary">{{salary}}</span>
+    </div>
+
+    <div class="company-info">
+        <span class="company-name">{{company}}</span>
+        <span class="location">{{location}}</span>
+    </div>
+
+    <div class="job-description">
+        {{description}}
+    </div>
+
+    <div class="job-tags">
+        {{#each tags}}
+        <span class="tag">{{this}}</span>
+        {{/each}}
+    </div>
+
+    <div class="job-card-footer">
+        <span class="post-time">发布于 {{postTime}}</span>
+        <button class="btn btn-primary apply-btn" onclick="event.stopPropagation(); JobService.applyJob({{id}})">
+            立即申请
+        </button>
+    </div>
+</div>
+
+<script>
+    // 职位卡片模板渲染
+    function renderJobCard(job) {
+        const template = document.querySelector('.job-card').outerHTML;
+        return template
+            .replace(/\{\{title\}\}/g, job.title)
+            .replace(/\{\{salary\}\}/g, job.salary)
+            .replace(/\{\{company\}\}/g, job.company)
+            .replace(/\{\{location\}\}/g, job.location)
+            .replace(/\{\{description\}\}/g, job.description)
+            .replace(/\{\{postTime\}\}/g, job.postTime)
+            .replace(/\{\{id\}\}/g, job.id)
+            .replace(/\{\{tags\}\}/g, job.tags.map(tag => `<span class="tag">${tag}</span>`).join(''));
+    }
+</script>

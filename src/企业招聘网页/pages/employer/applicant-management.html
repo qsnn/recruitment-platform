@@ -1,0 +1,177 @@
+<div class="employer-page">
+    <div class="container">
+        <div class="page-header">
+            <h1>申请人管理</h1>
+            <p>查看和管理职位申请人</p>
+        </div>
+
+        <div class="job-selector">
+            <label for="job-select">选择职位：</label>
+            <select id="job-select" class="form-control" onchange="loadApplicants(this.value)">
+                <option value="">请选择职位</option>
+                <option value="1">前端开发工程师</option>
+                <option value="2">Java后端工程师</option>
+                <option value="3">UI设计师</option>
+            </select>
+        </div>
+
+        <!-- 使用之前创建的applicant-list组件 -->
+        <div id="applicant-list-container">
+            <div class="empty-state">
+                <p>请先选择职位查看申请人</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .job-selector {
+        background: white;
+        padding: var(--spacing-lg);
+        border-radius: var(--border-radius-lg);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: var(--spacing-lg);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+    }
+
+    .job-selector label {
+        font-weight: 500;
+        color: var(--text-color);
+        white-space: nowrap;
+    }
+
+    .job-selector select {
+        max-width: 300px;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 检查URL参数
+        const urlParams = new URLSearchParams(window.location.search);
+        const jobId = urlParams.get('jobId');
+
+        if (jobId) {
+            document.getElementById('job-select').value = jobId;
+            loadApplicants(jobId);
+        }
+    });
+
+    async function loadApplicants(jobId) {
+        if (!jobId) {
+            document.getElementById('applicant-list-container').innerHTML = `
+                <div class="empty-state">
+                    <p>请先选择职位查看申请人</p>
+                </div>
+            `;
+            return;
+        }
+
+        try {
+            // 显示加载状态
+            document.getElementById('applicant-list-container').innerHTML = `
+                <div class="loading">加载申请人数据...</div>
+            `;
+
+            // 模拟加载申请人列表组件
+            setTimeout(() => {
+                document.getElementById('applicant-list-container').innerHTML = `
+                    <div class="applicant-list">
+                        <div class="list-header">
+                            <h3>申请人列表 - 前端开发工程师</h3>
+                            <div class="list-actions">
+                                <button class="btn btn-outline" onclick="exportApplicants()">导出简历</button>
+                                <button class="btn btn-primary" onclick="refreshApplicants()">刷新</button>
+                            </div>
+                        </div>
+
+                        <div class="list-filters">
+                            <div class="filter-group">
+                                <select class="filter-select" id="status-filter" onchange="filterApplicants()">
+                                    <option value="">所有状态</option>
+                                    <option value="pending">待处理</option>
+                                    <option value="reviewed">已查看</option>
+                                    <option value="interview">面试中</option>
+                                    <option value="rejected">已拒绝</option>
+                                    <option value="hired">已录用</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <input type="text" class="search-input" placeholder="搜索申请人..." oninput="searchApplicants(this.value)">
+                            </div>
+                        </div>
+
+                        <div class="applicant-table-container">
+                            <table class="applicant-table">
+                                <thead>
+                                    <tr>
+                                        <th>姓名</th>
+                                        <th>联系方式</th>
+                                        <th>申请时间</th>
+                                        <th>状态</th>
+                                        <th>简历</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div class="applicant-info">
+                                                <div class="applicant-avatar">张</div>
+                                                <div>
+                                                    <div class="applicant-name">张三</div>
+                                                    <div class="applicant-email">zhangsan@email.com</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>138****1234</td>
+                                        <td>2024-01-15 14:30</td>
+                                        <td><span class="status-badge status-pending">待处理</span></td>
+                                        <td><a href="#" class="resume-link">查看简历</a></td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="btn btn-sm btn-outline">查看</button>
+                                                <button class="btn btn-sm btn-primary">联系</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }, 1000);
+
+        } catch (error) {
+            console.error('加载申请人失败:', error);
+            document.getElementById('applicant-list-container').innerHTML = `
+                <div class="error-message">
+                    <p>加载申请人数据失败</p>
+                    <button onclick="loadApplicants('${jobId}')" class="btn btn-primary">重试</button>
+                </div>
+            `;
+        }
+    }
+
+    // 申请人管理函数
+    function exportApplicants() {
+        alert('导出申请人数据');
+    }
+
+    function refreshApplicants() {
+        const jobId = document.getElementById('job-select').value;
+        if (jobId) {
+            loadApplicants(jobId);
+        }
+    }
+
+    function filterApplicants() {
+        alert('筛选申请人');
+    }
+
+    function searchApplicants(keyword) {
+        alert('搜索申请人: ' + keyword);
+    }
+</script>
