@@ -146,8 +146,8 @@ const UserService = {
             body: formData
         });
     }
-};
 
+};
 // 公司服务
 const CompanyService = {
     // 新增公司
@@ -266,6 +266,170 @@ const TalentPoolService = {
         } catch (error) {
             console.error('查询公司人才列表失败:', error);
             throw new Error(error.message || '查询公司人才列表失败，请稍后重试');
+        }
+    }
+};
+// API基础配置
+const API_CONFIG = {
+    BASE_URL: 'http://localhost:8080/api', // 根据实际后端地址修改
+    getHeaders() {
+        const token = localStorage.getItem('token');
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        return headers;
+    }
+};
+
+// 公司服务
+const CompanyService = {
+    // 获取所有公司
+    async getAllCompanies() {
+        try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/company/list`, {
+                method: 'GET',
+                headers: API_CONFIG.getHeaders()
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('获取公司列表失败:', error);
+            throw error;
+        }
+    },
+
+    // 根据ID获取公司
+    async getCompanyById(companyId) {
+        try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/company/${companyId}`, {
+                method: 'GET',
+                headers: API_CONFIG.getHeaders()
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('获取公司失败:', error);
+            throw error;
+        }
+    },
+
+    // 新增公司
+    async addCompany(companyData) {
+        try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/company`, {
+                method: 'POST',
+                headers: API_CONFIG.getHeaders(),
+                body: JSON.stringify(companyData)
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('新增公司失败:', error);
+            throw error;
+        }
+    },
+
+    // 更新公司
+    async updateCompany(companyData) {
+        try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/company`, {
+                method: 'PUT',
+                headers: API_CONFIG.getHeaders(),
+                body: JSON.stringify(companyData)
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('更新公司失败:', error);
+            throw error;
+        }
+    },
+
+    // 删除公司
+    async deleteCompany(companyId) {
+        try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/company/${companyId}`, {
+                method: 'DELETE',
+                headers: API_CONFIG.getHeaders()
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('删除公司失败:', error);
+            throw error;
+        }
+    }
+};
+
+// 人才服务
+const TalentService = {
+    // 根据公司ID获取人才列表
+    async getTalentsByCompany(companyId) {
+        try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/talent/company/${companyId}`, {
+                method: 'GET',
+                headers: API_CONFIG.getHeaders()
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('获取人才列表失败:', error);
+            throw error;
+        }
+    },
+
+    // 根据ID获取人才
+    async getTalentById(talentId) {
+        try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/talent/${talentId}`, {
+                method: 'GET',
+                headers: API_CONFIG.getHeaders()
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('获取人才失败:', error);
+            throw error;
+        }
+    },
+
+    // 新增人才
+    async addTalent(talentData) {
+        try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/talent`, {
+                method: 'POST',
+                headers: API_CONFIG.getHeaders(),
+                body: JSON.stringify(talentData)
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('新增人才失败:', error);
+            throw error;
+        }
+    },
+
+    // 更新人才
+    async updateTalent(talentData) {
+        try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/talent`, {
+                method: 'PUT',
+                headers: API_CONFIG.getHeaders(),
+                body: JSON.stringify(talentData)
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('更新人才失败:', error);
+            throw error;
+        }
+    },
+
+    // 删除人才
+    async deleteTalent(talentId) {
+        try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/talent/${talentId}`, {
+                method: 'DELETE',
+                headers: API_CONFIG.getHeaders()
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('删除人才失败:', error);
+            throw error;
         }
     }
 };

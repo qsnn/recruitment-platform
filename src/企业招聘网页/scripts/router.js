@@ -137,7 +137,9 @@ const Router = {
         const pageMap = {
             'employer/post-job': 'post-job.html',
             'employer/manage-jobs': 'manage-jobs.html',
-            'employer/applicant-management': 'applicant-management.html'
+            'employer/applicant-management': 'applicant-management.html',
+            'employer/company-management': 'company-management.html', // 新增
+            'employer/talent-management': 'talent-management.html'
         };
 
         const pageFile = pageMap[route] || 'post-job.html';
