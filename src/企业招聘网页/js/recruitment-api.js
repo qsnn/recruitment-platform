@@ -1,8 +1,5 @@
-// js/recruitment-api.js
-// 后端 API 服务模块
-
 const ApiService = (function () {
-    const API_BASE = 'http://localhost:8080/api';
+    const API_BASE = 'http://124.71.101.139:10085/api';
 
     /**
      * 统一的请求处理器
