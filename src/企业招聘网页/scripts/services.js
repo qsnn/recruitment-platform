@@ -147,3 +147,125 @@ const UserService = {
         });
     }
 };
+
+// 公司服务
+const CompanyService = {
+    // 新增公司
+    async addCompany(companyData) {
+        try {
+            return await ApiService.request('/api/company', {
+                method: 'POST',
+                body: JSON.stringify(companyData)
+            });
+        } catch (error) {
+            console.error('新增公司失败:', error);
+            throw new Error(error.message || '新增公司失败，请稍后重试');
+        }
+    },
+
+    // 修改公司
+    async updateCompany(companyData) {
+        try {
+            return await ApiService.request('/api/company', {
+                method: 'PUT',
+                body: JSON.stringify(companyData)
+            });
+        } catch (error) {
+            console.error('修改公司失败:', error);
+            throw new Error(error.message || '修改公司失败，请稍后重试');
+        }
+    },
+
+    // 删除公司
+    async deleteCompany(companyId) {
+        try {
+            return await ApiService.request(`/api/company/${companyId}`, {
+                method: 'DELETE'
+            });
+        } catch (error) {
+            console.error('删除公司失败:', error);
+            throw new Error(error.message || '删除公司失败，请稍后重试');
+        }
+    },
+
+    // 根据ID查询公司
+    async getCompanyById(companyId) {
+        try {
+            return await ApiService.request(`/api/company/${companyId}`);
+        } catch (error) {
+            console.error('查询公司详情失败:', error);
+            throw new Error(error.message || '查询公司详情失败，请稍后重试');
+        }
+    },
+
+    // 查询全部公司列表
+    async getAllCompanies() {
+        try {
+            return await ApiService.request('/api/company/list');
+        } catch (error) {
+            console.error('查询公司列表失败:', error);
+            throw new Error(error.message || '查询公司列表失败，请稍后重试');
+        }
+    }
+};
+
+// 人才库服务
+const TalentPoolService = {
+    // 新增人才
+    async addTalent(talentData) {
+        try {
+            return await ApiService.request('/api/talent', {
+                method: 'POST',
+                body: JSON.stringify(talentData)
+            });
+        } catch (error) {
+            console.error('新增人才失败:', error);
+            throw new Error(error.message || '新增人才失败，请稍后重试');
+        }
+    },
+
+    // 修改人才
+    async updateTalent(talentData) {
+        try {
+            return await ApiService.request('/api/talent', {
+                method: 'PUT',
+                body: JSON.stringify(talentData)
+            });
+        } catch (error) {
+            console.error('修改人才失败:', error);
+            throw new Error(error.message || '修改人才失败，请稍后重试');
+        }
+    },
+
+    // 删除人才
+    async deleteTalent(talentId) {
+        try {
+            return await ApiService.request(`/api/talent/${talentId}`, {
+                method: 'DELETE'
+            });
+        } catch (error) {
+            console.error('删除人才失败:', error);
+            throw new Error(error.message || '删除人才失败，请稍后重试');
+        }
+    },
+
+    // 根据ID查询人才
+    async getTalentById(talentId) {
+        try {
+            return await ApiService.request(`/api/talent/${talentId}`);
+        } catch (error) {
+            console.error('查询人才详情失败:', error);
+            throw new Error(error.message || '查询人才详情失败，请稍后重试');
+        }
+    },
+
+    // 根据公司ID查询人才列表
+    async getTalentsByCompany(companyId) {
+        try {
+            return await ApiService.request(`/api/talent/company/${companyId}`);
+        } catch (error) {
+            console.error('查询公司人才列表失败:', error);
+            throw new Error(error.message || '查询公司人才列表失败，请稍后重试');
+        }
+    }
+};
