@@ -1,4 +1,3 @@
-<!-- language: html -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -128,8 +127,7 @@
         <div class="talent-list" id="recruiter-talent-list">
             <div class="empty-state">
                 <div class="icon">📚</div>
-                <p>人才库为空</p>
-                <p style="font-size: 12px; margin-top: 8px;">点击\`添加人才\`按钮开始建立人才库</p>
+                <p>正在加载人才库...</p>
             </div>
         </div>
     </div>
@@ -203,7 +201,7 @@
 </div>
 
 <script src="js/auth.js"></script>
-<script src="js/data.js"></script>
+<script src="js/recruitment-api.js"></script> <!-- 引入新的 recruitment-api.js -->
 <script>
     // 标签页切换
     function switchTab(tabName) {
@@ -223,87 +221,89 @@
     }
 
     // 加载人才库数据
-    function loadTalentPool() {
+    async function loadTalentPool() {
         const talentList = document.getElementById('recruiter-talent-list');
-        if (!talentList || !window.MockData) return;
+        if (!talentList) return;
 
-        const talents = MockData.getTalentPool();
+        talentList.innerHTML = `<div class="empty-state"><div class="icon">🔄</div><p>正在加载人才数据...</p></div>`;
 
-        if (talents.length === 0) {
-            talentList.innerHTML = `
-                <div class="empty-state">
-                    <div class="icon">📚</div>
-                    <p>人才库为空</p>
-                    <p style="font-size: 12px; margin-top: 8px;">点击"添加人才"按钮开始建立人才库</p>
-                </div>
-            `;
-            updateTalentStats();
-            return;
-        }
+        try {
+            const talents = await ApiService.getTalentPool();
 
-        updateTalentStats();
+            if (!talents || talents.length === 0) {
+                talentList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📚</div>
+                        <p>人才库为空</p>
+                        <p style="font-size: 12px; margin-top: 8px;">点击"添加人才"按钮开始建立人才库</p>
+                    </div>
+                `;
+                updateTalentStats([]);
+                return;
+            }
 
-        talentList.innerHTML = talents.map(talent => `
-            <div class="talent-card">
-                <div class="talent-header">
-                    <div>
-                        <h3 class="talent-name">${talent.name}</h3>
-                        <div style="font-size: 14px; color: #666; margin-top: 4px;">
-                            ${talent.position} · ${talent.experience}经验 · ${talent.education}
+            updateTalentStats(talents);
+
+            talentList.innerHTML = talents.map(talent => `
+                <div class="talent-card">
+                    <div class="talent-header">
+                        <div>
+                            <h3 class="talent-name">${talent.name}</h3>
+                            <div style="font-size: 14px; color: #666; margin-top: 4px;">
+                                ${talent.position || '未填写职位'} · ${talent.experience || '经验不详'} · ${talent.education || '学历不详'}
+                            </div>
+                        </div>
+                        <span class="talent-source">${talent.source || '未知'}</span>
+                    </div>
+
+                    <div class="talent-info">
+                        <div class="talent-info-item">
+                            <span>📱</span>
+                            <span>${talent.phone || '未提供'}</span>
+                        </div>
+                        <div class="talent-info-item">
+                            <span>📧</span>
+                            <span>${talent.email || '未提供'}</span>
+                        </div>
+                        <div class="talent-info-item">
+                            <span>📅</span>
+                            <span>添加：${talent.createTime ? new Date(talent.createTime).toLocaleDateString() : '未知'}</span>
                         </div>
                     </div>
-                    <span class="talent-source">${talent.source}</span>
-                </div>
 
-                <div class="talent-info">
-                    <div class="talent-info-item">
-                        <span>📱</span>
-                        <span>${talent.phone}</span>
+                    <div class="talent-tags">
+                        ${(talent.skills || []).slice(0, 5).map(skill =>
+                `<span class="talent-tag">${skill}</span>`
+            ).join('')}
                     </div>
-                    <div class="talent-info-item">
-                        <span>📧</span>
-                        <span>${talent.email}</span>
+
+                    ${talent.note ? `
+                    <div class="talent-note">
+                        <strong>备注：</strong>
+                        ${talent.note}
                     </div>
-                    <div class="talent-info-item">
-                        <span>📅</span>
-                        <span>添加：${talent.addedDate}</span>
+                    ` : ''}
+
+                    <div class="talent-actions">
+                        <button class="btn btn-sm" onclick="viewTalent(${talent.id})">查看</button>
+                        <button class="btn btn-primary btn-sm" onclick="inviteTalent(${talent.id})">邀请面试</button>
+                        <button class="btn btn-sm" onclick="editTalent(${talent.id})">编辑</button>
+                        <button class="btn btn-danger btn-sm" onclick="removeTalent(${talent.id})">移除</button>
                     </div>
                 </div>
-
-                <div class="talent-tags">
-                    ${talent.skills.slice(0, 5).map(skill =>
-            `<span class="talent-tag">${skill}</span>`
-        ).join('')}
-                </div>
-
-                ${talent.note ? `
-                <div class="talent-note">
-                    <strong>备注：</strong>
-                    ${talent.note}
-                </div>
-                ` : ''}
-
-                <div class="talent-actions">
-                    <button class="btn btn-sm" onclick="viewTalent(${talent.id})">查看</button>
-                    <button class="btn btn-primary btn-sm" onclick="inviteTalent(${talent.id})">邀请面试</button>
-                    <button class="btn btn-sm" onclick="editTalent(${talent.id})">编辑</button>
-                    <button class="btn btn-danger btn-sm" onclick="removeTalent(${talent.id})">移除</button>
-                </div>
-            </div>
-        `).join('');
+            `).join('');
+        } catch (error) {
+            talentList.innerHTML = `<div class="empty-state"><div class="icon">❌</div><p>加载人才数据失败</p><p style="font-size:12px;color:var(--danger-color);">${error.message}</p></div>`;
+        }
     }
 
     // 更新人才库统计
-    function updateTalentStats() {
-        if (!window.MockData) return;
-
-        const talents = MockData.getTalentPool();
-        const activeTalents = talents.filter(t => t.status === 'active').length;
+    function updateTalentStats(talents = []) {
+        const activeTalents = talents.filter(t => t.status === 'active').length; // 假设后端有status字段
 
         document.getElementById('total-talents').textContent = talents.length;
-        document.getElementById('active-talents').textContent = activeTalents;
-        document.getElementById('recent-invited').textContent =
-            Math.floor(talents.length * 0.3);
+        document.getElementById('active-talents').textContent = activeTalents || talents.length; // 如果没有status，则全部视为活跃
+        document.getElementById('recent-invited').textContent = Math.floor(talents.length * 0.3); // 模拟数据
     }
 
     // 简单查看（提示版）
@@ -314,131 +314,143 @@
         }
     }
 
-    function editTalent(talentId) {
-        alert('编辑人才 ' + talentId + ' 的信息（模拟操作）');
+    async function editTalent(talentId) {
+        const newNote = prompt('请输入新的备注信息：');
+        if (newNote === null) return; // 用户取消
+
+        try {
+            const talent = await ApiService.getTalentById(talentId);
+            talent.note = newNote;
+            await ApiService.updateTalent(talent);
+            alert('人才 ' + talentId + ' 的信息已更新');
+            loadTalentPool();
+        } catch (error) {
+            // 错误信息已在 ApiService 中 alert
+        }
     }
 
-    function removeTalent(talentId) {
-        if (confirm('确定要从人才库移除该人才吗？')) {
-            alert('人才 ' + talentId + ' 已从人才库移除（模拟操作）');
-            loadTalentPool();
+    async function removeTalent(talentId) {
+        if (confirm('确定要从人才库移除该人才吗？此操作不可恢复。')) {
+            try {
+                await ApiService.removeTalent(talentId);
+                alert('人才 ' + talentId + ' 已从人才库移除');
+                loadTalentPool();
+            } catch (error) {
+                // 错误信息已在 ApiService 中 alert
+            }
         }
     }
 
     // 添加新人才
-    function addNewTalent() {
-        const name = prompt('请输入人才姓名：', '李华');
-        const position = prompt('请输入职位：', '前端开发工程师');
+    async function addNewTalent() {
+        const name = prompt('请输入人才姓名：');
+        if (!name) return;
+        const position = prompt('请输入职位：');
+        if (!position) return;
+        const phone = prompt('请输入手机号：');
+        const email = prompt('请输入邮箱：');
 
-        if (name && position) {
-            const newTalent = {
-                name: name,
-                position: position,
-                experience: '3年',
-                education: '本科',
-                skills: ['JavaScript', 'React', 'Vue'],
-                phone: '138\*\*\*\*0000',
-                email: name.toLowerCase() + '@email.com',
-                source: '手动添加',
-                note: 'HR主动添加的人才'
-            };
+        const newTalent = {
+            name,
+            position,
+            phone,
+            email,
+            note: 'HR主动添加的人才'
+        };
 
-            MockData.addToTalentPool(newTalent);
-            alert('人才 "' + name + '" 已添加到人才库（模拟操作）');
+        try {
+            await ApiService.addTalent(newTalent);
+            alert('人才 "' + name + '" 已成功添加到人才库');
             loadTalentPool();
+        } catch (error) {
+            // 错误信息已在 ApiService 中 alert
         }
     }
 
     // 筛选与搜索（模拟）
     function filterTalent() {
         const v = document.getElementById('talent-filter').value;
-        alert('筛选人才：' + (v || '全部') + '（模拟操作）');
+        alert('筛选人才：' + (v || '全部') + '（此功能为前端模拟，尚未对接后端）');
     }
 
     function searchTalent() {
         const kw = document.querySelector('input[placeholder*="搜索人才"]').value;
         if (kw) {
-            alert('搜索人才：' + kw + '（模拟操作）');
+            alert('搜索人才：' + kw + '（此功能为前端模拟，尚未对接后端）');
         }
     }
 
     // 详细查看：模态框版
-    function viewTalent(talentId) {
-        const talent = MockData.talentPool.find(t => t.id === talentId);
-        if (!talent) {
-            alert('找不到该人才信息');
-            return;
-        }
+    async function viewTalent(talentId) {
+        try {
+            const talent = await ApiService.getTalentById(talentId);
+            if (!talent) {
+                alert('找不到该人才信息');
+                return;
+            }
 
-        const modalHTML = `
-            <div class="talent-modal" id="talent-detail-modal" style="display: flex;">
-                <div class="talent-modal-content">
-                    <div class="talent-modal-header">
-                        <h3 class="talent-modal-title">人才详细信息</h3>
-                        <button class="close-modal" onclick="closeTalentModal()">×</button>
-                    </div>
-
-                    <div style="margin-bottom: 20px;">
-                        <h4 style="margin-bottom: 10px; color: var(--text-primary);">
-                            ${talent.name} - ${talent.position}
-                        </h4>
-                        <div style="color: var(--text-secondary); font-size: 14px;">
-                            ${talent.experience}经验 · ${talent.education}
+            const modalHTML = `
+                <div class="talent-modal" id="talent-detail-modal" style="display: flex;">
+                    <div class="talent-modal-content">
+                        <div class="talent-modal-header">
+                            <h3 class="talent-modal-title">人才详细信息</h3>
+                            <button class="close-modal" onclick="closeTalentModal()">×</button>
                         </div>
-                    </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                        <div>
-                            <strong>基本信息</strong>
-                            <div style="margin-top: 10px; font-size: 14px;">
-                                <p>📱 ${talent.phone}</p>
-                                <p>📧 ${talent.email}</p>
-                                <p>来源：${talent.source}</p>
-                                <p>添加时间：${talent.addedDate}</p>
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="margin-bottom: 10px; color: var(--text-primary);">
+                                ${talent.name} - ${talent.position}
+                            </h4>
+                            <div style="color: var(--text-secondary); font-size: 14px;">
+                                ${talent.experience || '经验不详'} · ${talent.education || '学历不详'}
                             </div>
                         </div>
 
-                        <div>
-                            <strong>技能标签</strong>
-                            <div class="talent-tags" style="margin-top: 10px;">
-                                ${talent.skills.map(skill =>
-            `<span class="talent-tag">${skill}</span>`
-        ).join('')}
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <div>
+                                <strong>基本信息</strong>
+                                <div style="margin-top: 10px; font-size: 14px;">
+                                    <p>📱 ${talent.phone || '未提供'}</p>
+                                    <p>📧 ${talent.email || '未提供'}</p>
+                                    <p>来源：${talent.source || '未知'}</p>
+                                    <p>添加时间：${talent.createTime ? new Date(talent.createTime).toLocaleString() : '未知'}</p>
+                                </div>
+                            </div>
+
+                            <div>
+                                <strong>技能标签</strong>
+                                <div class="talent-tags" style="margin-top: 10px;">
+                                    ${(talent.skills || []).map(skill =>
+                `<span class="talent-tag">${skill}</span>`
+            ).join('')}
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    ${talent.note ? `
-                    <div style="margin-bottom: 20px;">
-                        <strong>HR备注</strong>
-                        <div style="margin-top: 10px; padding: 12px; background: #f5f5f5; border-radius: 6px;">
-                            ${talent.note}
+                        ${talent.note ? `
+                        <div style="margin-bottom: 20px;">
+                            <strong>HR备注</strong>
+                            <div style="margin-top: 10px; padding: 12px; background: #f5f5f5; border-radius: 6px;">
+                                ${talent.note}
+                            </div>
                         </div>
-                    </div>
-                    ` : ''}
+                        ` : ''}
 
-                    ${talent.sourceJob ? `
-                    <div style="margin-bottom: 20px;">
-                        <strong>来源职位信息</strong>
-                        <div style="margin-top: 10px; font-size: 14px;">
-                            申请职位：${talent.sourceJob}<br>
-                            申请时间：${talent.addedDate}
+                        <div style="border-top: 1px solid #eee; padding-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                            <button class="btn" onclick="closeTalentModal()">关闭</button>
+                            <button class="btn btn-primary" onclick="inviteTalentFromModal(${talent.id})">邀请面试</button>
+                            <button class="btn" onclick="editTalentFromModal(${talent.id})">编辑信息</button>
                         </div>
-                    </div>
-                    ` : ''}
-
-                    <div style="border-top: 1px solid #eee; padding-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
-                        <button class="btn" onclick="closeTalentModal()">关闭</button>
-                        <button class="btn btn-primary" onclick="inviteTalentFromModal(${talent.id})">邀请面试</button>
-                        <button class="btn" onclick="editTalentFromModal(${talent.id})">编辑信息</button>
                     </div>
                 </div>
-            </div>
-        `;
+            `;
 
-        const container = document.createElement('div');
-        container.innerHTML = modalHTML;
-        document.body.appendChild(container);
+            const container = document.createElement('div');
+            container.innerHTML = modalHTML;
+            document.body.appendChild(container);
+        } catch (error) {
+            // 错误信息已在 ApiService 中 alert
+        }
     }
 
     function inviteTalentFromModal(talentId) {
@@ -450,17 +462,20 @@
         }
     }
 
-    function editTalentFromModal(talentId) {
+    async function editTalentFromModal(talentId) {
         closeTalentModal();
         const newNote = prompt('请输入新的备注信息：', '技术能力优秀，保持联系');
         if (newNote) {
-            const talent = MockData.talentPool.find(t => t.id === talentId);
-            if (talent) {
+            try {
+                const talent = await ApiService.getTalentById(talentId);
                 talent.note = newNote;
-                alert('人才信息已更新（模拟操作）');
+                await ApiService.updateTalent(talent);
+                alert('人才信息已更新');
                 if (document.getElementById('talent-tab').classList.contains('active')) {
                     loadTalentPool();
                 }
+            } catch (error) {
+                // 错误信息已在 ApiService 中 alert
             }
         }
     }
@@ -468,13 +483,13 @@
     function closeTalentModal() {
         const modal = document.getElementById('talent-detail-modal');
         if (modal) {
-            modal.remove();
+            modal.parentElement.remove();
         }
     }
 
     // 页面初始化：检查登录并填充欢迎语
     document.addEventListener('DOMContentLoaded', function () {
-        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        const currentUser = Auth.getCurrentUser();
         if (!currentUser) {
             window.location.href = 'login.html';
             return;
@@ -483,20 +498,18 @@
         const greeting = document.getElementById('user-greeting');
         if (greeting) {
             greeting.textContent =
-                '欢迎，' + (currentUser.name || currentUser.username || '招聘专员');
+                '欢迎，' + (currentUser.realName || currentUser.username || '招聘专员');
+        }
+
+        // 默认加载第一个标签页的内容，如果是人才库则加载数据
+        if (document.querySelector('.tab-btn.active').getAttribute('onclick').includes('talent')) {
+            loadTalentPool();
         }
     });
-</script>
-<script src="js/auth.js"></script>
-<script>
+
     function handleLogout() {
-        // 清除登录信息
         Auth.logout();
-
-        // 可选：清理 Router 的 returnTo 等
         localStorage.removeItem('returnTo');
-
-        // 跳转到首页或登录页
         window.location.href = 'index.html';
     }
 </script>
