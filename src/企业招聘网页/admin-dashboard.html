@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>平台管理员中心 - 招聘系统</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/components/card.css">
+    <link rel="stylesheet" href="css/components/table.css">
+    <style>
+        /* 管理员特有样式 */
+        .admin-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .admin-stat-card {
+            text-align: center;
+            padding: var(--spacing-lg);
+        }
+
+        .admin-stat-number {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .admin-stat-trend {
+            font-size: 12px;
+            margin-top: var(--spacing-xs);
+        }
+
+        .trend-up { color: var(--success-color); }
+        .trend-down { color: var(--error-color); }
+        .trend-neutral { color: var(--text-disabled); }
+
+        .system-health {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--spacing-md);
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .system-health.good {
+            background: #f6ffed;
+            border-color: #b7eb8f;
+        }
+
+        .system-health.warning {
+            background: #fff7e6;
+            border-color: #ffd591;
+        }
+
+        .system-health.error {
+            background: #fff2f0;
+            border-color: #ffccc7;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .quick-action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-lg);
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .quick-action-btn:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .quick-action-btn i {
+            font-size: 24px;
+            margin-bottom: var(--spacing-sm);
+            color: var(--primary-color);
+        }
+
+        .audit-log {
+            background: var(--background-light);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-md);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .audit-log-item {
+            padding: var(--spacing-sm);
+            border-bottom: 1px solid var(--border-light);
+            font-size: 12px;
+        }
+
+        .audit-log-item:last-child {
+            border-bottom: none;
+        }
+
+        .audit-log-time {
+            color: var(--text-disabled);
+            margin-right: var(--spacing-md);
+        }
+
+        .audit-log-action {
+            color: var(--text-primary);
+        }
+
+        .audit-log-user {
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+<!-- 导航栏 -->
+<nav class="navbar">
+    <div class="container nav-content">
+        <div class="nav-logo">
+            <h1>招聘系统 - 平台管理员</h1>
+        </div>
+        <div class="nav-user">
+            <span id="user-greeting">欢迎，系统管理员</span>
+            <button class="btn logout-btn">退出登录</button>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <!-- 系统状态 -->
+    <div class="system-health good">
+        <div>
+            <strong>✅ 系统运行正常</strong>
+            <p style="margin: 4px 0 0 0; font-size: 12px;">所有服务运行正常，最后检查时间：2024-01-20 10:30</p>
+        </div>
+        <button class="btn btn-sm" onclick="refreshSystemStatus()">刷新状态</button>
+    </div>
+
+    <!-- 管理员统计 -->
+    <div class="admin-panel">
+        <div class="card admin-stat-card">
+            <div class="admin-stat-number">1,256</div>
+            <div class="stat-label">总用户数</div>
+            <div class="admin-stat-trend trend-up">↑ 12% 本周增长</div>
+        </div>
+
+        <div class="card admin-stat-card">
+            <div class="admin-stat-number">89</div>
+            <div class="stat-label">企业用户</div>
+            <div class="admin-stat-trend trend-up">↑ 5% 本周增长</div>
+        </div>
+
+        <div class="card admin-stat-card">
+            <div class="admin-stat-number">45</div>
+            <div class="stat-label">违规处理</div>
+            <div class="admin-stat-trend trend-down">↓ 3% 本周减少</div>
+        </div>
+
+        <div class="card admin-stat-card">
+            <div class="admin-stat-number">99.8%</div>
+            <div class="stat-label">系统可用性</div>
+            <div class="admin-stat-trend trend-neutral">→ 保持稳定</div>
+        </div>
+    </div>
+
+    <!-- 快捷操作 -->
+    <div class="quick-actions">
+        <div class="quick-action-btn" onclick="switchTab('users')">
+            <div style="font-size: 24px; margin-bottom: 8px;">👥</div>
+            <strong>用户管理</strong>
+            <small>管理所有用户账号</small>
+        </div>
+
+        <div class="quick-action-btn" onclick="switchTab('audit')">
+            <div style="font-size: 24px; margin-bottom: 8px;">📊</div>
+            <strong>操作审计</strong>
+            <small>查看系统操作记录</small>
+        </div>
+
+        <div class="quick-action-btn" onclick="switchTab('reports')">
+            <div style="font-size: 24px; margin-bottom: 8px;">📈</div>
+            <strong>数据报表</strong>
+            <small>生成系统报表</small>
+        </div>
+
+        <div class="quick-action-btn" onclick="showSystemSettings()">
+            <div style="font-size: 24px; margin-bottom: 8px;">⚙️</div>
+            <strong>系统设置</strong>
+            <small>配置系统参数</small>
+        </div>
+    </div>
+
+    <!-- 标签页 -->
+    <div class="dashboard-tabs">
+        <button class="tab-btn active" onclick="switchTab('dashboard')">控制台</button>
+        <button class="tab-btn" onclick="switchTab('users')">用户管理</button>
+        <button class="tab-btn" onclick="switchTab('roles')">角色权限</button>
+        <button class="tab-btn" onclick="switchTab('audit')">操作审计</button>
+        <button class="tab-btn" onclick="switchTab('reports')">数据报表</button>
+        <button class="tab-btn" onclick="switchTab('system')">系统维护</button>
+    </div>
+
+    <!-- 控制台标签页 -->
+    <div id="dashboard-tab" class="tab-content active">
+        <div class="content-layout">
+            <div class="main-content">
+                <h3>近期活动</h3>
+                <div class="card">
+                    <div class="audit-log">
+                        <div class="audit-log-item">
+                            <span class="audit-log-time">10:25</span>
+                            <span class="audit-log-user">admin001</span>
+                            <span class="audit-log-action">禁用了用户 test_user</span>
+                        </div>
+                        <div class="audit-log-item">
+                            <span class="audit-log-time">09:45</span>
+                            <span class="audit-log-user">employer002</span>
+                            <span class="audit-log-action">发布了新职位：Python开发工程师</span>
+                        </div>
+                        <div class="audit-log-item">
+                            <span class="audit-log-time">昨天 15:30</span>
+                            <span class="audit-log-user">jobseeker003</span>
+                            <span class="audit-log-action">注册了新账号</span>
+                        </div>
+                        <div class="audit-log-item">
+                            <span class="audit-log-time">昨天 14:20</span>
+                            <span class="audit-log-user">system</span>
+                            <span class="audit-log-action">系统自动备份完成</span>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>系统监控</h3>
+                <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+                    <div class="card">
+                        <h4>CPU 使用率</h4>
+                        <div class="mt-2">
+                            <div style="height: 20px; background: #f0f0f0; border-radius: 10px; overflow: hidden;">
+                                <div style="width: 45%; height: 100%; background: var(--success-color);"></div>
+                            </div>
+                            <div class="text-center mt-1">45%</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h4>内存使用率</h4>
+                        <div class="mt-2">
+                            <div style="height: 20px; background: #f0f0f0; border-radius: 10px; overflow: hidden;">
+                                <div style="width: 68%; height: 100%; background: var(--warning-color);"></div>
+                            </div>
+                            <div class="text-center mt-1">68%</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h4>磁盘空间</h4>
+                        <div class="mt-2">
+                            <div style="height: 20px; background: #f0f0f0; border-radius: 10px; overflow: hidden;">
+                                <div style="width: 82%; height: 100%; background: var(--error-color);"></div>
+                            </div>
+                            <div class="text-center mt-1">82%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="sidebar">
+                <h3>待处理事项</h3>
+                <div class="card">
+                    <div style="margin-bottom: var(--spacing-md);">
+                        <strong>待审核企业</strong>
+                        <span class="status-badge status-pending" style="float: right;">3</span>
+                    </div>
+                    <div style="margin-bottom: var(--spacing-md);">
+                        <strong>违规举报</strong>
+                        <span class="status-badge status-pending" style="float: right;">5</span>
+                    </div>
+                    <div style="margin-bottom: var(--spacing-md);">
+                        <strong>待处理申诉</strong>
+                        <span class="status-badge status-pending" style="float: right;">2</span>
+                    </div>
+                </div>
+
+                <h3>系统信息</h3>
+                <div class="card">
+                    <p><strong>版本：</strong>v2.1.0</p>
+                    <p><strong>上次备份：</strong>2024-01-20 02:00</p>
+                    <p><strong>运行时间：</strong>15天 6小时</p>
+                    <p><strong>数据库：</strong>正常</p>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- 用户管理标签页 -->
+    <div id="users-tab" class="tab-content">
+        <div class="flex items-center justify-between mb-4">
+            <h2>用户管理</h2>
+            <div class="flex gap-2">
+                <select id="user-role-filter" onchange="filterUsers()">
+                    <option value="">所有角色</option>
+                    <option value="job-seeker">求职者</option>
+                    <option value="employer">企业</option>
+                    <option value="interviewer">面试官</option>
+                    <option value="admin">管理员</option>
+                </select>
+                <select id="user-status-filter" onchange="filterUsers()">
+                    <option value="">所有状态</option>
+                    <option value="active">正常</option>
+                    <option value="disabled">已禁用</option>
+                    <option value="locked">已锁定</option>
+                </select>
+                <input type="text" placeholder="搜索用户..." oninput="searchUsers()">
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th style="width: 50px;">ID</th>
+                    <th>用户名</th>
+                    <th>姓名/公司</th>
+                    <th>角色</th>
+                    <th>邮箱</th>
+                    <th>注册时间</th>
+                    <th>最后登录</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>1</td>
+                    <td><strong>jobseeker001</strong></td>
+                    <td>张三</td>
+                    <td><span class="status-badge status-pending">求职者</span></td>
+                    <td>jobseeker@test.com</td>
+                    <td>2024-01-01</td>
+                    <td>2024-01-20 09:15</td>
+                    <td><span class="status-badge status-approved">正常</span></td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="table-action-btn" onclick="viewUserDetails(1)">详情</button>
+                            <button class="table-action-btn" onclick="editUser(1)">编辑</button>
+                            <button class="table-action-btn danger" onclick="disableUser(1)">禁用</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td><strong>employer001</strong></td>
+                    <td>测试科技有限公司</td>
+                    <td><span class="status-badge status-approved">企业</span></td>
+                    <td>employer@test.com</td>
+                    <td>2024-01-05</td>
+                    <td>2024-01-20 08:30</td>
+                    <td><span class="status-badge status-approved">正常</span></td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="table-action-btn" onclick="viewUserDetails(2)">详情</button>
+                            <button class="table-action-btn" onclick="editUser(2)">编辑</button>
+                            <button class="table-action-btn danger" onclick="disableUser(2)">禁用</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td><strong>interviewer001</strong></td>
+                    <td>张面试官</td>
+                    <td><span class="status-badge status-processing">面试官</span></td>
+                    <td>interviewer@test.com</td>
+                    <td>2024-01-10</td>
+                    <td>2024-01-20 10:45</td>
+                    <td><span class="status-badge status-approved">正常</span></td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="table-action-btn" onclick="viewUserDetails(3)">详情</button>
+                            <button class="table-action-btn" onclick="editUser(3)">编辑</button>
+                            <button class="table-action-btn danger" onclick="disableUser(3)">禁用</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td><strong>test_user</strong></td>
+                    <td>测试用户</td>
+                    <td><span class="status-badge status-pending">求职者</span></td>
+                    <td>test@email.com</td>
+                    <td>2024-01-15</td>
+                    <td>2024-01-19 14:20</td>
+                    <td><span class="status-badge status-rejected">已禁用</span></td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="table-action-btn" onclick="viewUserDetails(4)">详情</button>
+                            <button class="table-action-btn" onclick="editUser(4)">编辑</button>
+                            <button class="table-action-btn success" onclick="enableUser(4)">启用</button>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 角色权限标签页 -->
+    <div id="roles-tab" class="tab-content">
+        <h2>角色权限管理</h2>
+
+        <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">求职者</h3>
+                    <span class="status-badge">256 用户</span>
+                </div>
+                <div class="card-body">
+                    <div class="card-content">
+                        <p><strong>权限：</strong></p>
+                        <ul style="font-size: 13px; color: var(--text-secondary);">
+                            <li>浏览和搜索职位</li>
+                            <li>提交简历申请</li>
+                            <li>管理个人简历</li>
+                            <li>查看申请状态</li>
+                            <li>接收面试通知</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="card-actions">
+                        <button class="card-action-btn" onclick="editRolePermissions('job-seeker')">编辑权限</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">企业管理员</h3>
+                    <span class="status-badge">89 用户</span>
+                </div>
+                <div class="card-body">
+                    <div class="card-content">
+                        <p><strong>权限：</strong></p>
+                        <ul style="font-size: 13px; color: var(--text-secondary);">
+                            <li>发布和管理职位</li>
+                            <li>查看申请人简历</li>
+                            <li>安排面试</li>
+                            <li>管理公司信息</li>
+                            <li>下载申请人数据</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="card-actions">
+                        <button class="card-action-btn" onclick="editRolePermissions('employer')">编辑权限</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">面试官</h3>
+                    <span class="status-badge">32 用户</span>
+                </div>
+                <div class="card-body">
+                    <div class="card-content">
+                        <p><strong>权限：</strong></p>
+                        <ul style="font-size: 13px; color: var(--text-secondary);">
+                            <li>查看分配的候选人</li>
+                            <li>记录面试评价</li>
+                            <li>提交录用建议</li>
+                            <li>安排面试时间</li>
+                            <li>查看面试历史</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="card-actions">
+                        <button class="card-action-btn" onclick="editRolePermissions('interviewer')">编辑权限</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">平台管理员</h3>
+                    <span class="status-badge">4 用户</span>
+                </div>
+                <div class="card-body">
+                    <div class="card-content">
+                        <p><strong>权限：</strong></p>
+                        <ul style="font-size: 13px; color: var(--text-secondary);">
+                            <li>管理所有用户账号</li>
+                            <li>查看系统操作日志</li>
+                            <li>配置系统参数</li>
+                            <li>处理违规举报</li>
+                            <li>生成数据报表</li>
+                            <li>系统维护操作</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="card-actions">
+                        <button class="card-action-btn primary" onclick="editRolePermissions('admin')">编辑权限</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 操作审计标签页 -->
+    <div id="audit-tab" class="tab-content">
+        <div class="flex items-center justify-between mb-4">
+            <h2>操作审计日志</h2>
+            <div class="flex gap-2">
+                <input type="date" id="audit-date" value="2024-01-20">
+                <select id="audit-type-filter">
+                    <option value="">所有类型</option>
+                    <option value="login">登录登出</option>
+                    <option value="user">用户操作</option>
+                    <option value="job">职位操作</option>
+                    <option value="system">系统操作</option>
+                </select>
+                <button class="btn btn-primary" onclick="exportAuditLog()">导出日志</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                    <tr>
+                        <th>时间</th>
+                        <th>操作用户</th>
+                        <th>操作类型</th>
+                        <th>操作内容</th>
+                        <th>IP地址</th>
+                        <th>结果</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>2024-01-20 10:25:15</td>
+                        <td>admin001</td>
+                        <td><span class="status-badge status-rejected">用户管理</span></td>
+                        <td>禁用了用户 test_user</td>
+                        <td>192.168.1.100</td>
+                        <td><span class="status-badge status-approved">成功</span></td>
+                    </tr>
+                    <tr>
+                        <td>2024-01-20 09:45:30</td>
+                        <td>employer002</td>
+                        <td><span class="status-badge status-processing">职位操作</span></td>
+                        <td>发布了新职位：Python开发工程师</td>
+                        <td>192.168.1.150</td>
+                        <td><span class="status-badge status-approved">成功</span></td>
+                    </tr>
+                    <tr>
+                        <td>2024-01-20 09:30:12</td>
+                        <td>jobseeker003</td>
+                        <td><span class="status-badge status-pending">登录</span></td>
+                        <td>用户登录系统</td>
+                        <td>192.168.1.200</td>
+                        <td><span class="status-badge status-approved">成功</span></td>
+                    </tr>
+                    <tr>
+                        <td>2024-01-20 02:00:00</td>
+                        <td>system</td>
+                        <td><span class="status-badge">系统操作</span></td>
+                        <td>系统自动备份</td>
+                        <td>127.0.0.1</td>
+                        <td><span class="status-badge status-approved">成功</span></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script>
+    // 标签页切换
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        document.getElementById(tabName + '-tab').classList.add('active');
+        if (event && event.target) {
+            event.target.classList.add('active');
+        }
+    }
+
+    // 刷新系统状态
+    function refreshSystemStatus() {
+        alert('正在刷新系统状态...（模拟操作）');
+        // 模拟延迟
+        setTimeout(() => {
+            alert('系统状态已刷新，一切正常！');
+        }, 1000);
+    }
+
+    // 显示系统设置
+    function showSystemSettings() {
+        alert('打开系统设置面板（模拟操作）');
+    }
+
+    // 筛选用户
+    function filterUsers() {
+        const role = document.getElementById('user-role-filter').value;
+        const status = document.getElementById('user-status-filter').value;
+        alert(`筛选用户：角色=${role}, 状态=${status}（模拟操作）`);
+    }
+
+    // 搜索用户
+    function searchUsers() {
+        alert('搜索用户（模拟操作）');
+    }
+
+    // 查看用户详情
+    function viewUserDetails(userId) {
+        alert(`查看用户 ${userId} 的详细信息（模拟操作）`);
+    }
+
+    // 编辑用户
+    function editUser(userId) {
+        alert(`编辑用户 ${userId} 的信息（模拟操作）`);
+    }
+
+    // 禁用用户
+    function disableUser(userId) {
+        if (confirm(`确定要禁用用户 ${userId} 吗？该用户将无法登录系统。`)) {
+            alert(`用户 ${userId} 已被禁用（模拟操作）`);
+        }
+    }
+
+    // 启用用户
+    function enableUser(userId) {
+        if (confirm(`确定要启用用户 ${userId} 吗？`)) {
+            alert(`用户 ${userId} 已被启用（模拟操作）`);
+        }
+    }
+
+    // 编辑角色权限
+    function editRolePermissions(role) {
+        alert(`编辑 ${role} 角色的权限设置（模拟操作）`);
+    }
+
+    // 导出审计日志
+    function exportAuditLog() {
+        alert('正在导出审计日志...（模拟操作）');
+        // 模拟延迟
+        setTimeout(() => {
+            alert('审计日志已导出为 audit_log_20240120.csv');
+        }, 1500);
+    }
+
+    // 页面初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (currentUser && document.getElementById('user-greeting')) {
+            document.getElementById('user-greeting').textContent = `欢迎，${currentUser.name || currentUser.username}`;
+        }
+
+        // 绑定退出登录按钮
+        document.querySelector('.logout-btn').addEventListener('click', function() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        });
+
+        // 加载模拟数据
+        if (window.MockData) {
+            const stats = MockData.getStatistics();
+            // 可以在这里更新页面上的统计数据
+        }
+    });
+</script>
+</body>
+</html>

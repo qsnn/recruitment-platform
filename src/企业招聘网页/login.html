@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>招聘系统 - 登录</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h1>招聘系统</h1>
+            <p>请选择您的身份登录</p>
+        </div>
+
+        <form id="login-form" class="login-form">
+            <div class="form-group">
+                <label for="username">账号</label>
+                <input type="text" id="username" name="username" required placeholder="请输入账号">
+            </div>
+
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" required placeholder="请输入密码">
+            </div>
+
+            <div class="form-group">
+                <label for="role">身份</label>
+                <select id="role" name="role" required>
+                    <option value="">请选择身份</option>
+                    <option value="job-seeker">求职者</option>
+                    <option value="employer">企业管理员</option>
+                    <option value="recruiter">招聘专员</option>  <!-- 合并HR和面试官 -->
+                    <option value="admin">平台管理员</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">登录</button>
+        </form>
+
+        <div class="login-footer">
+            <p>还没有账号？ <a href="register.html">注册求职者账号</a></p>
+            <p class="note">企业、面试官、管理员账号由系统生成</p>
+        </div>
+    </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/router.js"></script>
+</body>
+</html>

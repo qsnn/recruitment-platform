@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>求职者中心</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+<nav class="navbar">
+    <div class="container nav-content">
+        <div class="nav-logo">
+            <h1>招聘系统 - 求职者</h1>
+        </div>
+        <div class="nav-user">
+            <span>欢迎，求职者</span>
+            <button class="btn logout-btn" onclick="logout()">退出登录</button>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="dashboard-header">
+        <h2>职位搜索</h2>
+        <div class="search-box">
+            <input type="text" placeholder="搜索职位、公司或关键词...">
+            <button class="btn btn-primary">搜索</button>
+        </div>
+    </div>
+
+    <div class="content-layout">
+        <aside class="sidebar">
+            <h3>筛选条件</h3>
+            <div class="filter-section">
+                <h4>薪资范围</h4>
+                <select>
+                    <option>不限</option>
+                    <option>10K以下</option>
+                    <option>10-20K</option>
+                    <option>20-30K</option>
+                    <option>30K以上</option>
+                </select>
+            </div>
+            <div class="filter-section">
+                <h4>工作地点</h4>
+                <select>
+                    <option>不限</option>
+                    <option>北京</option>
+                    <option>上海</option>
+                    <option>深圳</option>
+                    <option>广州</option>
+                </select>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="job-list">
+                <div class="card job-card">
+                    <div class="job-header">
+                        <h3>前端开发工程师</h3>
+                        <span class="salary">¥20K-35K</span>
+                    </div>
+                    <div class="job-info">
+                        <span class="company">某科技公司</span>
+                        <span class="location">北京</span>
+                        <span class="experience">3-5年经验</span>
+                    </div>
+                    <div class="job-description">
+                        负责公司产品前端开发，要求熟悉React/Vue...
+                    </div>
+                    <div class="job-actions">
+                        <button class="btn btn-primary" onclick="applyJob(1)">提交简历</button>
+                        <button class="btn" onclick="viewJobDetail(1)">查看详情</button>
+                    </div>
+                </div>
+
+                <div class="card job-card">
+                    <div class="job-header">
+                        <h3>Java后端工程师</h3>
+                        <span class="salary">¥25K-40K</span>
+                    </div>
+                    <div class="job-info">
+                        <span class="company">某互联网公司</span>
+                        <span class="location">上海</span>
+                        <span class="experience">5年以上经验</span>
+                    </div>
+                    <div class="job-description">
+                        负责后端系统架构设计，要求精通Java/Spring...
+                    </div>
+                    <div class="job-actions">
+                        <button class="btn btn-primary" onclick="applyJob(2)">提交简历</button>
+                        <button class="btn" onclick="viewJobDetail(2)">查看详情</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script>
+    function applyJob(jobId) {
+        alert(`已提交简历到职位ID: ${jobId}（模拟操作）`);
+    }
+
+    function viewJobDetail(jobId) {
+        alert(`查看职位详情: ${jobId}（模拟操作）`);
+    }
+
+    function logout() {
+        localStorage.removeItem('currentUser');
+        window.location.href = 'login.html';
+    }
+</script>
+</body>
+</html>
