@@ -6,29 +6,28 @@
 const Router = {
     // 路由配置
     routes: {
-        // 公共页面
         '/': 'index.html',
         '/index': 'index.html',
         '/login': 'login.html',
         '/register': 'register.html',
 
-        // 角色页面
-        '/job-seeker': 'job-seeker-dashboard.html',
-        '/employer': 'employer-dashboard.html',
-        '/interviewer': 'interviewer-dashboard.html',
-        '/admin': 'admin-dashboard.html'
+        // 直接使用仪表盘页面路径
+        '/job-seeker-dashboard.html': 'job-seeker-dashboard.html',
+        '/employer-dashboard.html': 'employer-dashboard.html',
+        '/interviewer-dashboard.html': 'interviewer-dashboard.html',
+        '/admin-dashboard.html': 'admin-dashboard.html'
     },
 
-    // 角色权限配置
     rolePermissions: {
-        'job-seeker': ['/job-seeker'],
-        'employer': ['/employer'],
-        'interviewer': ['/interviewer'],
-        'admin': ['/admin']
+        'job-seeker': ['/job-seeker-dashboard.html'],
+        'employer': ['/employer-dashboard.html'],
+        'interviewer': ['/interviewer-dashboard.html'],
+        'admin': ['/admin-dashboard.html']
     },
+
 
     // 初始化
-    init: function() {
+    init: function () {
         // 绑定链接点击事件
         this.bindLinks();
 
@@ -45,7 +44,7 @@ const Router = {
     },
 
     // 绑定链接点击事件
-    bindLinks: function() {
+    bindLinks: function () {
         document.addEventListener('click', (e) => {
             // 检查是否是内部链接
             const link = e.target.closest('a');
@@ -60,7 +59,7 @@ const Router = {
     },
 
     // 导航到指定路径
-    navigate: function(path, replace = false) {
+    navigate: function (path, replace = false) {
         // 解析路径
         const url = new URL(path, window.location.origin);
 
@@ -86,26 +85,23 @@ const Router = {
 
     // 检查权限
     checkPermission: function(path) {
-        // 公共页面不需要权限
         if (['/', '/index', '/login', '/register'].includes(path)) {
             return true;
         }
 
-        // 获取当前用户
         const currentUser = JSON.parse(localStorage.getItem('currentUser'));
         if (!currentUser) {
             return false;
         }
 
-        // 检查用户角色是否有权限访问该路径
         const userRole = currentUser.role;
         const allowedRoutes = this.rolePermissions[userRole] || [];
 
         return allowedRoutes.some(route => path.startsWith(route));
     },
-
+    
     // 重定向到登录页
-    redirectToLogin: function() {
+    redirectToLogin: function () {
         // 保存当前想要访问的路径
         const returnTo = window.location.pathname;
         localStorage.setItem('returnTo', returnTo);
@@ -115,7 +111,7 @@ const Router = {
     },
 
     // 处理路由
-    handleRoute: function() {
+    handleRoute: function () {
         const path = window.location.pathname;
 
         // 检查权限
@@ -146,7 +142,7 @@ const Router = {
     },
 
     // 设置页面标题
-    setPageTitle: function() {
+    setPageTitle: function () {
         const path = window.location.pathname;
         const titles = {
             '/': '招聘系统 - 主页',
@@ -164,7 +160,7 @@ const Router = {
     },
 
     // 更新导航栏激活状态
-    updateNavActiveState: function() {
+    updateNavActiveState: function () {
         const path = window.location.pathname;
 
         // 移除所有激活状态
@@ -189,7 +185,7 @@ const Router = {
     },
 
     // 显示加载指示器
-    showLoading: function() {
+    showLoading: function () {
         // 创建或获取加载指示器
         let loader = document.getElementById('router-loader');
         if (!loader) {
@@ -231,7 +227,7 @@ const Router = {
     },
 
     // 隐藏加载指示器
-    hideLoading: function() {
+    hideLoading: function () {
         const loader = document.getElementById('router-loader');
         if (loader) {
             loader.style.display = 'none';
@@ -239,7 +235,7 @@ const Router = {
     },
 
     // 获取当前路由参数
-    getQueryParams: function() {
+    getQueryParams: function () {
         const searchParams = new URLSearchParams(window.location.search);
         const params = {};
 
@@ -251,7 +247,7 @@ const Router = {
     },
 
     // 构建URL查询参数
-    buildQueryString: function(params) {
+    buildQueryString: function (params) {
         const searchParams = new URLSearchParams();
 
         for (const [key, value] of Object.entries(params)) {
@@ -264,23 +260,23 @@ const Router = {
     },
 
     // 跳转到指定路由
-    goTo: function(route, params = {}) {
+    goTo: function (route, params = {}) {
         const queryString = this.buildQueryString(params);
         this.navigate(`${route}${queryString}`);
     },
 
     // 返回上一页
-    goBack: function() {
+    goBack: function () {
         window.history.back();
     },
 
     // 刷新当前页
-    reload: function() {
+    reload: function () {
         window.location.reload();
     },
 
     // 获取当前角色应该访问的仪表板
-    getDashboardForRole: function(role) {
+    getDashboardForRole: function (role) {
         const dashboards = {
             'job-seeker': 'job-seeker-dashboard.html',
             'employer': 'employer-dashboard.html',
@@ -292,7 +288,7 @@ const Router = {
     },
 
     // 登录成功后跳转到正确的仪表板
-    redirectAfterLogin: function(role) {
+    redirectAfterLogin: function (role) {
         const dashboard = this.getDashboardForRole(role);
         const returnTo = localStorage.getItem('returnTo');
 
@@ -307,7 +303,7 @@ const Router = {
     },
 
     // 登出
-    logout: function() {
+    logout: function () {
         // 清除用户数据
         localStorage.removeItem('currentUser');
         localStorage.removeItem('returnTo');
