@@ -1,20 +1,19 @@
-<!-- language: html -->
 <header class="site-header">
     <div class="header-container">
         <div class="logo">
             <h1><a href="#home">企业招聘平台</a></h1>
         </div>
 
-        <nav class="main-nav">
-            <ul>
+        <nav class="main-nav" id="main-nav">
+            <!-- 默认导航（未登录状态） -->
+            <ul id="nav-list">
                 <li><a href="#candidate/job-search" class="nav-link">🔍 职位搜索</a></li>
-                <li><a href="#candidate/my-applications" class="nav-link">📄 我的申请</a></li>
-                <li><a href="#employer/manage-jobs" class="nav-link">💼 企业入口</a></li>
-                <li><a href="#admin/dashboard" class="nav-link">⚙️ 管理员</a></li>
+                <li><a href="#auth/login" class="nav-link">🔐 登录入口</a></li>
             </ul>
         </nav>
 
         <div class="user-actions" id="user-actions">
+            <!-- 默认显示登录注册按钮 -->
             <a href="#auth/login" class="btn btn-login">登录</a>
             <a href="#auth/register" class="btn btn-primary">注册</a>
         </div>
@@ -22,27 +21,89 @@
 </header>
 
 <script>
-    // 头部组件的用户状态管理
-    function updateUserStatus() {
+    // 角色对应的导航菜单配置
+    const ROLE_NAVIGATION = {
+        // 未登录
+        guest: [
+            { title: '🔍 职位搜索', href: '#candidate/job-search' },
+            { title: '🔐 登录入口', href: '#auth/login' }
+        ],
+
+        // 求职者
+        candidate: [
+            { title: '🔍 职位搜索', href: '#candidate/job-search' },
+            { title: '📄 我的申请', href: '#candidate/my-applications' },
+            { title: '👤 个人中心', href: '#candidate/profile' }
+        ],
+
+        // 企业管理员
+        employer: [
+            { title: '📝 发布职位', href: '#employer/post-job' },
+            { title: '💼 职位管理', href: '#employer/manage-jobs' },
+            { title: '👥 申请人管理', href: '#employer/applicant-management' },
+            { title: '🏢 公司管理', href: '#employer/company-management' },
+            { title: '👨‍💼 人才库', href: '#employer/talent-management' }
+        ],
+
+        // 平台管理员
+        admin: [
+            { title: '📊 数据看板', href: '#admin/dashboard' },
+            { title: '👤 用户管理', href: '#admin/user-management' },
+            { title: '🏢 公司管理', href: '#admin/companies' },
+            { title: '⚙️ 系统设置', href: '#admin/system-settings' },
+            { title: '📋 审核中心', href: '#admin/audit' }
+        ],
+
+        // 面试官
+        interviewer: [
+            { title: '📅 面试安排', href: '#interviewer/schedule' },
+            { title: '📋 候选人评估', href: '#interviewer/evaluation' },
+            { title: '📊 面试统计', href: '#interviewer/stats' }
+        ]
+    };
+
+    // 更新导航菜单
+    function updateNavigation() {
+        const user = getCurrentUser();
+        const role = user ? user.role : 'guest';
+        const navList = document.getElementById('nav-list');
+
+        // 生成导航菜单
+        const navItems = ROLE_NAVIGATION[role] || ROLE_NAVIGATION.guest;
+        const navHTML = navItems.map(item => `
+            <li>
+                <a href="${item.href}" class="nav-link ${isActive(item.href) ? 'active' : ''}">
+                    ${item.title}
+                </a>
+            </li>
+        `).join('');
+
+        navList.innerHTML = navHTML;
+    }
+
+    // 更新用户操作区域
+    function updateUserActions() {
         const userActions = document.getElementById('user-actions');
-        const user = AuthService.getCurrentUser();
+        const user = getCurrentUser();
 
         if (user) {
-            const displayName = user.username || '用户';
+            // 已登录：显示用户信息和退出按钮
+            const roleNames = {
+                candidate: '求职者',
+                employer: '企业',
+                admin: '管理员',
+                interviewer: '面试官'
+            };
 
             userActions.innerHTML = `
                 <div class="user-info">
-                    <div class="avatar">${displayName.charAt(0)}</div>
-                    <span>${displayName}</span>
-                    <button class="btn btn-outline" onclick="AuthService.logout()">退出</button>
+                    <div class="avatar">${user.name.charAt(0)}</div>
+                    <span>${user.name} (${roleNames[user.role] || user.role})</span>
+                    <button class="btn btn-outline" onclick="logout()">退出</button>
                 </div>
             `;
-
-            // 登录后可以在这里根据角色控制导航高亮/显示
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.classList.remove('active');
-            });
         } else {
+            // 未登录：显示登录注册按钮
             userActions.innerHTML = `
                 <a href="#auth/login" class="btn btn-login">登录</a>
                 <a href="#auth/register" class="btn btn-primary">注册</a>
@@ -50,6 +111,47 @@
         }
     }
 
-    // 初始化头部状态
-    document.addEventListener('DOMContentLoaded', updateUserStatus);
+    // 检查当前路由是否激活
+    function isActive(href) {
+        const currentHash = window.location.hash.slice(1) || 'home';
+        const targetHash = href.slice(1);
+        return currentHash.startsWith(targetHash);
+    }
+
+    // 获取当前用户
+    function getCurrentUser() {
+        try {
+            const userData = localStorage.getItem('currentUser');
+            return userData ? JSON.parse(userData) : null;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    // 退出登录
+    function logout() {
+        localStorage.removeItem('currentUser');
+        // 更新导航和用户操作
+        updateNavigation();
+        updateUserActions();
+        // 跳转到首页
+        if (window.Router && window.Router.navigateTo) {
+            window.Router.navigateTo('#home');
+        } else {
+            window.location.hash = '#home';
+        }
+        // 刷新页面
+        setTimeout(() => location.reload(), 100);
+    }
+
+    // 监听路由变化，更新激活状态
+    window.addEventListener('hashchange', updateNavigation);
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(() => {
+            updateNavigation();
+            updateUserActions();
+        }, 100);
+    });
 </script>

@@ -14,21 +14,33 @@ const AuthService = {
     },
 
     // 登录
-    async login(credentials) {
-        try {
-            console.log('调用登录API:', credentials);
+     async login(credentials) {
+            try {
+                // 模拟不同角色的用户数据
+                const roleUsers = {
+                    // 求职者账号
+                    'zhangsan': { id: 1, username: 'zhangsan', name: '张三', role: 'candidate' },
+                    // 企业管理员账号
+                    'company01': { id: 2, username: 'company01', name: '某科技公司', role: 'employer' },
+                    // 平台管理员账号
+                    'admin': { id: 3, username: 'admin', name: '系统管理员', role: 'admin' },
+                    // 面试官账号
+                    'interviewer01': { id: 4, username: 'interviewer01', name: '李面试官', role: 'interviewer' }
+                };
+                const user = roleUsers[credentials.username];
 
-            const response = await fetch('http://localhost:8080/api/user/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include',
-                body: JSON.stringify({
-                    username: credentials.username,
-                    password: credentials.password
-                })
-            });
+                            if (user && credentials.password === '123456') {
+                                user.token = 'mock-jwt-token-' + Date.now();
+                                this.setCurrentUser(user);
+                                return user;
+                            } else {
+                                throw new Error('用户名或密码错误');
+                            }
+
+                        } catch (error) {
+                            throw new Error('登录失败，请检查用户名和密码');
+                        }
+                    },
 
             // HTTP 层错误
             if (!response.ok) {
