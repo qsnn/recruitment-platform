@@ -1,4 +1,3 @@
-<!-- language: html -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -35,97 +34,53 @@
         <aside class="sidebar">
             <h3>筛选条件</h3>
             <div class="filter-section">
-                <h4>薪资范围</h4>
-                <select id="salary-filter">
-                    <option value="">不限</option>
-                    <option value="lt10">10K以下</option>
-                    <option value="10-20">10-20K</option>
-                    <option value="20-30">20-30K</option>
-                    <option value="gt30">30K以上</option>
-                </select>
-            </div>
-            <div class="filter-section">
                 <h4>工作地点</h4>
-                <select id="location-filter">
+                <select id="location-filter" onchange="searchJobs()">
                     <option value="">不限</option>
                     <option value="北京">北京</option>
                     <option value="上海">上海</option>
                     <option value="深圳">深圳</option>
                     <option value="广州">广州</option>
+                    <option value="杭州">杭州</option>
+                </select>
+            </div>
+            <!-- 新增学历要求筛选 -->
+            <div class="filter-section">
+                <h4>学历要求</h4>
+                <select id="education-filter" onchange="searchJobs()">
+                    <option value="">不限</option>
+                    <option value="大专">大专</option>
+                    <option value="本科">本科</option>
+                    <option value="硕士">硕士</option>
+                    <option value="博士">博士</option>
+                </select>
+            </div>
+            <!-- 新增工作经验筛选 -->
+            <div class="filter-section">
+                <h4>工作经验</h4>
+                <select id="experience-filter" onchange="searchJobs()">
+                    <option value="">不限</option>
+                    <option value="在校/应届">在校/应届</option>
+                    <option value="1年以内">1年以内</option>
+                    <option value="1-3年">1-3年</option>
+                    <option value="3-5年">3-5年</option>
+                    <option value="5-10年">5-10年</option>
                 </select>
             </div>
         </aside>
 
         <main class="main-content">
+            <!-- 职位列表容器 -->
             <div class="job-list" id="job-list">
-                <div class="card job-card">
-                    <div class="job-header">
-                        <h3>前端开发工程师</h3>
-                        <span class="salary">¥20K-35K</span>
-                    </div>
-                    <div class="job-info">
-                        <span class="company">某科技公司</span>
-                        <span class="location">北京</span>
-                        <span class="experience">3-5年经验</span>
-                    </div>
-                    <div class="job-description">
-                        负责公司产品前端开发，要求熟悉React\/Vue...
-                    </div>
-                    <div class="job-actions">
-                        <button class="btn btn-primary" onclick="applyJob(1)">提交简历</button>
-                        <button class="btn" onclick="viewJobDetail(1)">查看详情</button>
-                    </div>
-                </div>
-
-                <div class="card job-card">
-                    <div class="job-header">
-                        <h3>Java后端工程师</h3>
-                        <span class="salary">¥25K-40K</span>
-                    </div>
-                    <div class="job-info">
-                        <span class="company">某互联网公司</span>
-                        <span class="location">上海</span>
-                        <span class="experience">5年以上经验</span>
-                    </div>
-                    <div class="job-description">
-                        负责后端系统架构设计，要求精通Java\/Spring...
-                    </div>
-                    <div class="job-actions">
-                        <button class="btn btn-primary" onclick="applyJob(2)">提交简历</button>
-                        <button class="btn" onclick="viewJobDetail(2)">查看详情</button>
-                    </div>
-                </div>
+                <!-- 职位卡片将由JS动态填充 -->
             </div>
         </main>
     </div>
 </div>
 
 <script src="js/auth.js"></script>
+<script src="js/job-search.js"></script>
 <script>
-    // 提交简历（模拟）
-    function applyJob(jobId) {
-        alert('已提交简历到职位ID: ' + jobId + '（模拟操作）');
-    }
-
-    // 查看职位详情（模拟）
-    function viewJobDetail(jobId) {
-        alert('查看职位详情: ' + jobId + '（模拟操作）');
-    }
-
-    // 搜索职位（模拟）
-    function searchJobs() {
-        const kw = document.getElementById('job-search-input').value.trim();
-        const salary = document.getElementById('salary-filter').value;
-        const location = document.getElementById('location-filter').value;
-        alert(
-            '搜索职位：' +
-            (kw || '全部') +
-            '\\n薪资：' + (salary || '不限') +
-            '\\n地点：' + (location || '不限') +
-            '（模拟操作）'
-        );
-    }
-
     // 页面初始化：检查登录并填充欢迎语
     document.addEventListener('DOMContentLoaded', function () {
         const currentUser = JSON.parse(localStorage.getItem('currentUser'));
@@ -140,19 +95,25 @@
             greeting.textContent =
                 '欢迎，' + (currentUser.name || currentUser.username || '求职者');
         }
+
+        // 页面加载时自动执行一次搜索
+        searchJobs();
     });
-</script>
-<script src="js/auth.js"></script>
-<script>
+
     function handleLogout() {
         // 清除登录信息
         Auth.logout();
-
-        // 可选：清理 Router 的 returnTo 等
-        localStorage.removeItem('returnTo');
-
         // 跳转到首页或登录页
         window.location.href = 'index.html';
+    }
+
+    // 模拟函数，实际功能在 job-search.js 中
+    function applyJob(jobId) {
+        alert('已提交简历到职位ID: ' + jobId + '（模拟操作）');
+    }
+
+    function viewJobDetail(jobId) {
+        alert('查看职位详情: ' + jobId + '（模拟操作）');
     }
 </script>
 </body>
