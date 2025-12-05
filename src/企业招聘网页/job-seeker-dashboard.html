@@ -139,9 +139,9 @@
             <!-- 视图: 简历管理 -->
             <div id="resumes-view" class="view">
                 <h2>我的简历</h2>
-                <button class="btn btn-primary">创建新简历</button>
+                <button class="btn btn-primary" onclick="createNewResume()">创建新简历</button>
                 <div class="list-container" style="margin-top: 1rem;">
-                    <p>（这里将展示您的简历列表）</p>
+                    <div id="resume-list">正在加载简历列表...</div>
                 </div>
             </div>
 
@@ -209,26 +209,27 @@
 <script src="js/auth.js"></script>
 <script src="js/job-search.js"></script>
 <script>
+    const RESUME_API_BASE = 'http://124.71.101.139:10085/api/resume';
+
     // 页面初始化
     document.addEventListener('DOMContentLoaded', function () {
-        // 使用 auth.js 的方法获取当前用户，更安全
         const currentUser = Auth.getCurrentUser();
         if (!currentUser || currentUser.role !== 'job-seeker') {
-            // 如果用户未登录或角色不正确，重定向到登录页
             window.location.href = 'login.html';
             return;
         }
 
         const greeting = document.getElementById('user-greeting');
         if (greeting) {
-            // 优先使用真实姓名(realName)，否则使用用户名(username)
             greeting.textContent = '欢迎，' + (currentUser.realName || currentUser.username || '求职者');
         }
 
         // 默认加载职位搜索
         searchJobs();
-        // 直接使用已有的用户信息填充个人信息表单
+        // 填充个人信息
         loadUserProfile(currentUser);
+        // 自动加载当前用户简历列表
+        initUserResumes(currentUser);
     });
 
     function handleLogout() {
@@ -340,6 +341,138 @@
             console.error('更新用户信息异常:', e);
             return { success: false, message: '请求异常，请稍后重试' };
         }
+    }
+
+
+    // 视图切换逻辑
+    function switchView(viewId, element) {
+        document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+        document.querySelectorAll('.sidebar-nav a').forEach(nav => nav.classList.remove('active'));
+
+        document.getElementById(viewId + '-view').classList.add('active');
+        element.classList.add('active');
+
+        // 切到「我的简历」时自动刷新
+        if (viewId === 'resumes') {
+            const currentUser = Auth.getCurrentUser();
+            if (currentUser) {
+                initUserResumes(currentUser);
+            }
+        }
+    }
+
+    /**
+     * 调用后端接口获取简历列表（只负责请求）
+     * @param {number|string} userId
+     * @returns {Promise<{success:boolean, data?:Array, message?:string}>}
+     */
+    async function fetchUserResumesApi(userId) {
+        try {
+            const resp = await fetch(`${RESUME_API_BASE}/user/${encodeURIComponent(userId)}`, {
+                method: 'GET'
+            });
+
+            if (!resp.ok) {
+                const text = await resp.text();
+                return { success: false, message: `网络错误: ${resp.status} ${text}` };
+            }
+
+            const json = await resp.json(); // { code, message, data }
+            if (json.code !== 200) {
+                return { success: false, message: json.message || '加载失败' };
+            }
+
+            return { success: true, data: json.data || [] };
+        } catch (e) {
+            console.error('获取简历列表异常:', e);
+            return { success: false, message: '请求异常，请稍后重试' };
+        }
+    }
+
+    /**
+     * 初始化/刷新当前用户简历列表（调用 API \+ 渲染）
+     * @param {object} user
+     */
+    async function initUserResumes(user) {
+        const listContainer = document.getElementById('resume-list');
+        if (!listContainer || !user) return;
+
+        listContainer.textContent = '正在加载简历列表...';
+
+        const result = await fetchUserResumesApi(user.userId);
+        if (!result.success) {
+            listContainer.textContent = result.message || '加载失败';
+            return;
+        }
+
+        const resumes = result.data;
+        if (!resumes || resumes.length === 0) {
+            listContainer.textContent = '暂无简历，请点击上方「创建新简历」。';
+            return;
+        }
+
+        const ul = document.createElement('ul');
+        ul.style.listStyle = 'none';
+        ul.style.padding = '0';
+
+        resumes.forEach(resume => {
+            const li = document.createElement('li');
+            li.style.border = '1px solid #ddd';
+            li.style.padding = '8px 12px';
+            li.style.marginBottom = '8px';
+            li.style.borderRadius = '4px';
+            li.style.display = 'flex';
+            li.style.justifyContent = 'space-between';
+            li.style.alignItems = 'center';
+
+            const left = document.createElement('div');
+            const title = document.createElement('div');
+            title.textContent = resume.title || '未命名简历';
+
+            const meta = document.createElement('div');
+            meta.style.fontSize = '12px';
+            meta.style.color = '#666';
+            const createTime = resume.createTime || resume.createdAt || '';
+            meta.textContent = createTime ? `创建时间：${createTime}` : '';
+
+            left.appendChild(title);
+            left.appendChild(meta);
+
+            const actions = document.createElement('div');
+
+            const viewBtn = document.createElement('button');
+            viewBtn.className = 'btn btn-sm';
+            viewBtn.textContent = '查看';
+            viewBtn.onclick = () => viewResumeDetail(resume.resumeId);
+
+            const editBtn = document.createElement('button');
+            editBtn.className = 'btn btn-sm';
+            editBtn.style.marginLeft = '8px';
+            editBtn.textContent = '编辑';
+            editBtn.onclick = () => editResume(resume.resumeId);
+
+            actions.appendChild(viewBtn);
+            actions.appendChild(editBtn);
+
+            li.appendChild(left);
+            li.appendChild(actions);
+
+            ul.appendChild(li);
+        });
+
+        listContainer.innerHTML = '';
+        listContainer.appendChild(ul);
+    }
+
+    // 占位：创建/查看/编辑简历
+    function createNewResume() {
+        alert('创建新简历功能待实现');
+    }
+    function viewResumeDetail(resumeId) {
+        alert('查看简历详情：' + resumeId + '（待实现）');
+    }
+    function editResume(resumeId) {
+        alert('编辑简历：' + resumeId + '（待实现）');
     }
 </script>
 </body>
