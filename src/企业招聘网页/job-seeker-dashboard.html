@@ -6,6 +6,53 @@
     <title>求职者中心 - 招聘系统</title>
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/dashboard.css">
+    <style>
+        /* 新增样式，用于视图切换和新模块 */
+        .sidebar-nav a {
+            display: block;
+            padding: 12px 15px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background-color: #eef2ff;
+            color: #4f46e5;
+        }
+        .view {
+            display: none; /* 默认隐藏所有视图 */
+        }
+        .view.active {
+            display: block; /* 只显示激活的视图 */
+        }
+        .profile-form .form-group {
+            margin-bottom: 1rem;
+        }
+        .profile-form label {
+            display: block;
+            margin-bottom: .5rem;
+        }
+        .profile-form input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
 </head>
 <body>
 <nav class="navbar">
@@ -22,57 +69,138 @@
 </nav>
 
 <div class="container">
-    <div class="dashboard-header">
-        <h2>职位搜索</h2>
-        <div class="search-box">
-            <input type="text" id="job-search-input" placeholder="搜索职位、公司或关键词...">
-            <button class="btn btn-primary" onclick="searchJobs()">搜索</button>
-        </div>
-    </div>
-
     <div class="content-layout">
         <aside class="sidebar">
-            <h3>筛选条件</h3>
-            <div class="filter-section">
-                <h4>工作地点</h4>
-                <select id="location-filter" onchange="searchJobs()">
-                    <option value="">不限</option>
-                    <option value="北京">北京</option>
-                    <option value="上海">上海</option>
-                    <option value="深圳">深圳</option>
-                    <option value="广州">广州</option>
-                    <option value="杭州">杭州</option>
-                </select>
-            </div>
-            <!-- 新增学历要求筛选 -->
-            <div class="filter-section">
-                <h4>学历要求</h4>
-                <select id="education-filter" onchange="searchJobs()">
-                    <option value="">不限</option>
-                    <option value="大专">大专</option>
-                    <option value="本科">本科</option>
-                    <option value="硕士">硕士</option>
-                    <option value="博士">博士</option>
-                </select>
-            </div>
-            <!-- 新增工作经验筛选 -->
-            <div class="filter-section">
-                <h4>工作经验</h4>
-                <select id="experience-filter" onchange="searchJobs()">
-                    <option value="">不限</option>
-                    <option value="在校/应届">在校/应届</option>
-                    <option value="1年以内">1年以内</option>
-                    <option value="1-3年">1-3年</option>
-                    <option value="3-5年">3-5年</option>
-                    <option value="5-10年">5-10年</option>
-                </select>
-            </div>
+            <h3>管理中心</h3>
+            <nav class="sidebar-nav">
+                <a href="#" class="active" onclick="switchView('job-search', this)">职位搜索</a>
+                <a href="#" onclick="switchView('profile', this)">个人信息</a>
+                <a href="#" onclick="switchView('resumes', this)">我的简历</a>
+                <a href="#" onclick="switchView('applications', this)">我的申请</a>
+                <a href="#" onclick="switchView('favorites', this)">我的收藏</a>
+                <a href="#" onclick="switchView('interviews', this)">面试安排</a>
+            </nav>
         </aside>
 
         <main class="main-content">
-            <!-- 职位列表容器 -->
-            <div class="job-list" id="job-list">
-                <!-- 职位卡片将由JS动态填充 -->
+            <!-- 视图: 职位搜索 -->
+            <div id="job-search-view" class="view active">
+                <div class="dashboard-header">
+                    <h2>职位搜索</h2>
+                    <div class="search-box">
+                        <input type="text" id="job-search-input" placeholder="搜索职位、公司或关键词...">
+                        <button class="btn btn-primary" onclick="searchJobs()">搜索</button>
+                    </div>
+                </div>
+                <div class="filter-controls">
+                    <h4>筛选条件</h4>
+                    <select id="location-filter" onchange="searchJobs()">
+                        <option value="">工作地点</option>
+                        <option value="北京">北京</option>
+                        <option value="上海">上海</option>
+                        <option value="深圳">深圳</option>
+                    </select>
+                    <select id="education-filter" onchange="searchJobs()">
+                        <option value="">学历要求</option>
+                        <option value="大专">大专</option>
+                        <option value="本科">本科</option>
+                        <option value="硕士">硕士</option>
+                    </select>
+                    <select id="experience-filter" onchange="searchJobs()">
+                        <option value="">工作经验</option>
+                        <option value="1-3年">1-3年</option>
+                        <option value="3-5年">3-5年</option>
+                    </select>
+                </div>
+                <div class="job-list" id="job-list"></div>
+            </div>
+
+            <!-- 视图: 个人信息管理 -->
+            <div id="profile-view" class="view">
+                <h2>个人信息管理</h2>
+                <form id="profile-form" class="profile-form">
+                    <div class="form-group">
+                        <label for="profile-username">用户名</label>
+                        <input type="text" id="profile-username" name="username" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-phone">手机号</label>
+                        <input type="text" id="profile-phone" name="phone">
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-email">邮箱</label>
+                        <input type="email" id="profile-email" name="email">
+                    </div>
+                    <!-- 可以根据需要添加更多教育、工作经历等字段 -->
+                    <button type="submit" class="btn btn-primary">保存更新</button>
+                </form>
+            </div>
+
+            <!-- 视图: 简历管理 -->
+            <div id="resumes-view" class="view">
+                <h2>我的简历</h2>
+                <button class="btn btn-primary">创建新简历</button>
+                <div class="list-container" style="margin-top: 1rem;">
+                    <p>（这里将展示您的简历列表）</p>
+                </div>
+            </div>
+
+            <!-- 视图: 求职状态跟踪 -->
+            <div id="applications-view" class="view">
+                <h2>我的申请</h2>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>职位名称</th>
+                        <th>公司</th>
+                        <th>申请日期</th>
+                        <th>状态</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- 示例行 -->
+                    <tr>
+                        <td>Java开发工程师</td>
+                        <td>示例科技公司</td>
+                        <td>2023-11-01</td>
+                        <td>待审核</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 视图: 职位收藏 -->
+            <div id="favorites-view" class="view">
+                <h2>我的收藏</h2>
+                <div class="job-list">
+                    <p>（这里将展示您收藏的职位）</p>
+                </div>
+            </div>
+
+            <!-- 视图: 面试安排 -->
+            <div id="interviews-view" class="view">
+                <h2>面试安排</h2>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>职位名称</th>
+                        <th>公司</th>
+                        <th>面试时间</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- 示例行 -->
+                    <tr>
+                        <td>前端开发工程师</td>
+                        <td>示例网络公司</td>
+                        <td>2023-11-15 10:00</td>
+                        <td>待确认</td>
+                        <td><a href="#">接受</a> / <a href="#">拒绝</a></td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
         </main>
     </div>
@@ -81,33 +209,61 @@
 <script src="js/auth.js"></script>
 <script src="js/job-search.js"></script>
 <script>
-    // 页面初始化：检查登录并填充欢迎语
+    // 页面初始化
     document.addEventListener('DOMContentLoaded', function () {
         const currentUser = JSON.parse(localStorage.getItem('currentUser'));
         if (!currentUser) {
-            // 未登录则跳转登录页
             window.location.href = 'login.html';
             return;
         }
 
         const greeting = document.getElementById('user-greeting');
         if (greeting) {
-            greeting.textContent =
-                '欢迎，' + (currentUser.name || currentUser.username || '求职者');
+            greeting.textContent = '欢迎，' + (currentUser.name || currentUser.username || '求职者');
         }
 
-        // 页面加载时自动执行一次搜索
+        // 默认加载职位搜索
         searchJobs();
+        // 加载个人信息
+        loadUserProfile(currentUser.userId);
     });
 
     function handleLogout() {
-        // 清除登录信息
         Auth.logout();
-        // 跳转到首页或登录页
         window.location.href = 'index.html';
     }
 
-    // 模拟函数，实际功能在 job-search.js 中
+    // 视图切换逻辑
+    function switchView(viewId, element) {
+        // 隐藏所有视图
+        document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+        // 移除所有导航链接的激活状态
+        document.querySelectorAll('.sidebar-nav a').forEach(nav => nav.classList.remove('active'));
+
+        // 显示目标视图
+        document.getElementById(viewId + '-view').classList.add('active');
+        // 激活当前导航链接
+        element.classList.add('active');
+    }
+
+    // 根据用户ID加载个人信息
+    async function loadUserProfile(userId) {
+        // 注意：这里的API路径是根据您提供的文档推断的，如果后端基础路径不同，需要调整
+        const API_BASE_URL = 'http://localhost:10085/api';
+        try {
+            const response = await fetch(`${API_BASE_URL}/user/${userId}`);
+            if (!response.ok) throw new Error('获取用户信息失败');
+            const user = await response.json();
+
+            document.getElementById('profile-username').value = user.username || '';
+            document.getElementById('profile-phone').value = user.phone || '';
+            document.getElementById('profile-email').value = user.email || '';
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    // 模拟函数
     function applyJob(jobId) {
         alert('已提交简历到职位ID: ' + jobId + '（模拟操作）');
     }
