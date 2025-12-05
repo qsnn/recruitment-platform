@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://124.71.101.139:10085/api/user';
+const API_BASE_URL = 'http://124.71.101.139:10085/api';
 
 /**
  * 根据条件搜索职位
