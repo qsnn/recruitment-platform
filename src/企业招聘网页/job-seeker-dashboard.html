@@ -269,6 +269,78 @@
     function viewJobDetail(jobId) {
         alert('查看职位详情: ' + jobId + '（模拟操作）');
     }
+    document.getElementById('profile-form').addEventListener('submit', async function (event) {
+        event.preventDefault(); // 阻止表单默认提交行为
+
+        const currentUser = Auth.getCurrentUser();
+        if (!currentUser) {
+            alert('用户未登录，无法更新信息。');
+            return;
+        }
+
+        // 从表单获取更新后的数据
+        const phone = document.getElementById('profile-phone').value;
+        const email = document.getElementById('profile-email').value;
+
+        // 构建API请求的载荷
+        const payload = {
+            userId: currentUser.userId,
+            phone: phone,
+            email: email
+        };
+
+        // 调用API更新用户信息
+        const result = await updateUserProfileApi(payload);
+
+        if (result.success) {
+            alert('个人信息更新成功！');
+            // 使用 auth.js 提供的函数更新本地存储的用户信息
+            const updatedUser = Auth.updateCurrentUser({ phone, email });
+
+            // 更新页面上的欢迎语（如果需要）
+            const greeting = document.getElementById('user-greeting');
+            if (greeting && updatedUser) {
+                greeting.textContent = '欢迎，' + (updatedUser.realName || updatedUser.username || '求职者');
+            }
+
+        } else {
+            alert('更新失败：' + result.message);
+        }
+    });
+
+    /**
+     * 调用后端API更新用户信息
+     * @param {object} payload - 包含 userId, phone, email 的对象
+     * @returns {Promise<{success: boolean, message: string}>}
+     */
+    async function updateUserProfileApi(payload) {
+        // 从 auth.js 获取 API 基地址
+        const API_BASE = 'http://124.71.101.139:10085/api/user';
+        try {
+            const resp = await fetch(`${API_BASE}`, { // API端点是 /api/user
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!resp.ok) {
+                const errorText = await resp.text();
+                return { success: false, message: `网络错误: ${resp.status} ${errorText}` };
+            }
+
+            const json = await resp.json();
+            if (json.code !== 200) {
+                return { success: false, message: json.message || '更新失败' };
+            }
+
+            return { success: true, message: json.message || '更新成功' };
+        } catch (e) {
+            console.error('更新用户信息异常:', e);
+            return { success: false, message: '请求异常，请稍后重试' };
+        }
+    }
 </script>
 </body>
 </html>
