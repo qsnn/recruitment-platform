@@ -211,21 +211,24 @@
 <script>
     // 页面初始化
     document.addEventListener('DOMContentLoaded', function () {
-        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-        if (!currentUser) {
+        // 使用 auth.js 的方法获取当前用户，更安全
+        const currentUser = Auth.getCurrentUser();
+        if (!currentUser || currentUser.role !== 'job-seeker') {
+            // 如果用户未登录或角色不正确，重定向到登录页
             window.location.href = 'login.html';
             return;
         }
 
         const greeting = document.getElementById('user-greeting');
         if (greeting) {
-            greeting.textContent = '欢迎，' + (currentUser.name || currentUser.username || '求职者');
+            // 优先使用真实姓名(realName)，否则使用用户名(username)
+            greeting.textContent = '欢迎，' + (currentUser.realName || currentUser.username || '求职者');
         }
 
         // 默认加载职位搜索
         searchJobs();
-        // 加载个人信息
-        loadUserProfile(currentUser.userId);
+        // 直接使用已有的用户信息填充个人信息表单
+        loadUserProfile(currentUser);
     });
 
     function handleLogout() {
@@ -246,21 +249,16 @@
         element.classList.add('active');
     }
 
-    // 根据用户ID加载个人信息
-    async function loadUserProfile(userId) {
-        // 注意：这里的API路径是根据您提供的文档推断的，如果后端基础路径不同，需要调整
-        const API_BASE_URL = 'http://localhost:10085/api';
-        try {
-            const response = await fetch(`${API_BASE_URL}/user/${userId}`);
-            if (!response.ok) throw new Error('获取用户信息失败');
-            const user = await response.json();
-
-            document.getElementById('profile-username').value = user.username || '';
-            document.getElementById('profile-phone').value = user.phone || '';
-            document.getElementById('profile-email').value = user.email || '';
-        } catch (error) {
-            console.error(error);
-        }
+    /**
+     * 根据传入的用户对象填充个人信息表单
+     * @param {object} user - 当前登录的用户对象 (包含 UserProfileVO 字段)
+     */
+    function loadUserProfile(user) {
+        if (!user) return;
+        // 从 currentUser 对象中直接获取信息并填充
+        document.getElementById('profile-username').value = user.username || '';
+        document.getElementById('profile-phone').value = user.phone || '';
+        document.getElementById('profile-email').value = user.email || '';
     }
 
     // 模拟函数

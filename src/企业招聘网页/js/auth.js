@@ -125,6 +125,18 @@ function getCurrentUser() {
     return storage.get(CURRENT_USER_KEY, null);
 }
 
+// 新增：用于在更新信息后，同步更新本地存储
+function updateCurrentUser(updatedFields) {
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+        // 合并旧信息和新字段
+        const newUser = { ...currentUser, ...updatedFields };
+        storage.set(CURRENT_USER_KEY, newUser);
+        return newUser;
+    }
+    return null;
+}
+
 function logout() {
     storage.remove(CURRENT_USER_KEY);
 }
@@ -141,11 +153,13 @@ function requireAuth() {
     return true;
 }
 
-// 暴露到全局
+
+// 暴露到全局 (确保导出了新方法)
 window.Auth = {
     login,
     register,
     getCurrentUser,
+    updateCurrentUser, // 暴露新方法
     logout,
     isAuthenticated,
     requireAuth
