@@ -1,8 +1,8 @@
-const USER_API_BASE = (typeof window !== 'undefined' && window.API_BASE ? window.API_BASE : '/api') + '/user';
-const JOB_API_BASE = (typeof window !== 'undefined' && window.API_BASE ? window.API_BASE : '/api') + '/job/info';
-const TALENT_API_BASE = (typeof window !== 'undefined' && window.API_BASE ? window.API_BASE : '/api') + '/talent';
-const COMPANY_API_BASE = (typeof window !== 'undefined' && window.API_BASE ? window.API_BASE : '/api') + '/company';
-const USER_PASSWORD_API_BASE = userId => ((typeof window !== 'undefined' && window.API_BASE ? window.API_BASE : '/api') + `/user/${encodeURIComponent(userId)}/password`);
+const USER_API_BASE = (typeof window !== 'undefined' && window.API_BASE ? window.API_BASE : '') + '/api/user';
+const JOB_API_BASE = (typeof window !== 'undefined' && window.API_BASE ? window.API_BASE : '') + '/api/job/info';
+const TALENT_API_BASE = (typeof window !== 'undefined' && window.API_BASE ? window.API_BASE : '') + '/api/talent';
+const COMPANY_API_BASE = (typeof window !== 'undefined' && window.API_BASE ? window.API_BASE : '') + '/api/company';
+const USER_PASSWORD_API_BASE = userId => ((typeof window !== 'undefined' && window.API_BASE ? window.API_BASE : '') + `/api/user/${encodeURIComponent(userId)}/password`);
 
 document.addEventListener('DOMContentLoaded', () => {
     const currentUser = Auth.getCurrentUser();

@@ -19,7 +19,7 @@ async function loadApplicants(user) {
 
     try {
         const params = new URLSearchParams({ current: 1, size: 20 });
-        const resp = await fetch(`/api/applications/company/${encodeURIComponent(user.companyId)}?${params.toString()}`);
+        const resp = await fetch(`api/applications/company/${encodeURIComponent(user.companyId)}?${params.toString()}`);
 
         if (!resp.ok) {
             const text = await resp.text();
@@ -69,7 +69,7 @@ async function viewResume(resumeId) {
     }
 
     try {
-        const data = await ApiService.request(`/resume/${encodeURIComponent(resumeId)}`);
+        const data = await ApiService.request(`/api/resume/${encodeURIComponent(resumeId)}`);
         if (!data) {
             alert('未找到简历信息');
             return;
@@ -136,7 +136,7 @@ async function scheduleInterview(applicationId) {
     try {
         // 通过公司申请列表找到当前申请记录，以获取求职者姓名
         const params = new URLSearchParams({ current: 1, size: 100 });
-        const data = await ApiService.request(`/applications/company/${encodeURIComponent(currentUser.companyId)}?${params.toString()}`);
+        const data = await ApiService.request(`/api/applications/company/${encodeURIComponent(currentUser.companyId)}?${params.toString()}`);
         const applicants = data && data.records ? data.records : [];
         const app = applicants.find(a => a.applicationId === applicationId);
         if (!app) {
@@ -184,7 +184,7 @@ async function addToTalentPool(applicationId) {
             current: 1,
             size: 100
         });
-        const data = await ApiService.request(`/applications/company/${encodeURIComponent(currentUser.companyId)}?${params.toString()}`);
+        const data = await ApiService.request(`/api/applications/company/${encodeURIComponent(currentUser.companyId)}?${params.toString()}`);
         const applicants = data && data.records ? data.records : [];
         const app = applicants.find(a => a.applicationId === applicationId);
         if (!app) {
@@ -219,7 +219,7 @@ async function rejectApplicant(applicationId) {
     const reason = prompt('可以填写拒绝原因（选填）：', '简历与岗位要求不匹配');
 
     try {
-        await ApiService.request(`/applications/${encodeURIComponent(applicationId)}/status`, {
+        await ApiService.request(`/api/applications/${encodeURIComponent(applicationId)}/status`, {
             method: 'PUT',
             body: JSON.stringify({ status: 'REJECTED', reason: reason || '' })
         });

@@ -1,6 +1,6 @@
-const RESUME_API_BASE = `${window.API_BASE || '/api'}/resume`;
-const USER_API_BASE = `${window.API_BASE || '/api'}/user`;
-const USER_PASSWORD_API_BASE = userId => `${window.API_BASE || '/api'}/user/${encodeURIComponent(userId)}/password`;
+const RESUME_API_BASE = `${(window.API_BASE || '') + '/api'}/resume`;
+const USER_API_BASE = `${(window.API_BASE || '') + '/api'}/user`;
+const USER_PASSWORD_API_BASE = userId => `${(window.API_BASE || '') + '/api'}/user/${encodeURIComponent(userId)}/password`;
 
 document.addEventListener('DOMContentLoaded', () => {
     const currentUser = Auth.getCurrentUser();

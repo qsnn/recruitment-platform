@@ -164,7 +164,7 @@ async function viewTalentDetail(talentId, resumeId) {
         let resume = null;
         if (resumeId) {
             try {
-                resume = await ApiService.request(`/resume/${encodeURIComponent(resumeId)}`);
+                resume = await ApiService.request(`/api/resume/${encodeURIComponent(resumeId)}`);
             } catch (e) {
                 console.error('加载简历详情失败:', e);
             }

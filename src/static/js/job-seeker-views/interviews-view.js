@@ -30,7 +30,7 @@ async function loadInterviews(currentUser) {
     tbody.innerHTML = '';
 
     try {
-        const base = window.API_BASE || '/api';
+        const base = (window.API_BASE || '') + '/api';
         const userId = currentUser.userId;
         if (!userId) {
             if (statusEl) statusEl.textContent = '用户信息不完整，无法加载面试安排';

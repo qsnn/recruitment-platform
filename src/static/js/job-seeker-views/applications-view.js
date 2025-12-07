@@ -34,7 +34,7 @@ async function loadApplications(currentUser) {
             current: 1,
             size: 20
         });
-        const base = window.API_BASE || '/api';
+        const base = (window.API_BASE || '') + '/api';
         const resp = await fetch(`${base}/applications/my?${params.toString()}`);
         if (!resp.ok) {
             const text = await resp.text();

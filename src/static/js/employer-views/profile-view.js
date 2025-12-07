@@ -57,7 +57,7 @@ function renderEmployerProfileView(container, currentUser) {
 
 async function loadEmployerProfile(user) {
     try {
-        const resp = await fetch(`/api/user/${encodeURIComponent(user.userId)}`);
+        const resp = await fetch(`api/user/${encodeURIComponent(user.userId)}`);
         if (!resp.ok) return;
         const json = await resp.json();
         const data = (json && typeof json === 'object' && 'code' in json)
@@ -96,7 +96,7 @@ function bindEmployerProfileSave(user) {
         };
 
         try {
-            const resp = await fetch('/api/user', {
+            const resp = await fetch('api/user', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -148,7 +148,7 @@ function bindEmployerPasswordChange(user) {
         }
 
         try {
-            const resp = await fetch(`/api/user/${encodeURIComponent(user.userId)}/password`, {
+            const resp = await fetch(`api/user/${encodeURIComponent(user.userId)}/password`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ oldPassword: oldPwd, newPassword: newPwd })

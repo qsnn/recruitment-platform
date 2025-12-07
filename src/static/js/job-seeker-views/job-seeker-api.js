@@ -1,4 +1,4 @@
-const JOB_SEEKER_API_BASE = (typeof window !== 'undefined' && window.API_BASE) ? window.API_BASE : '/api';
+const JOB_SEEKER_API_BASE = ((typeof window !== 'undefined' && window.API_BASE) ? window.API_BASE : '') + '/api';
 
 async function apiRequest(url, options = {}) {
     try {

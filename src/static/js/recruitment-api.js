@@ -1,5 +1,5 @@
 const ApiService = (function () {
-    const API_BASE = '/api';
+    const API_BASE = '';
 
     /**
      * 统一的请求处理器（更健壮的 JSON 解析与错误处理）
@@ -73,7 +73,7 @@ const ApiService = (function () {
         getTalentPool: function () {
             const companyId = getCompanyId();
             if (!companyId) return Promise.reject('无法获取公司ID');
-            return request(`/talent/company/${companyId}`);
+            return request(`/api/talent/company/${companyId}`);
         },
 
         /**
@@ -86,7 +86,7 @@ const ApiService = (function () {
             if (!companyId) return Promise.reject('无法获取公司ID');
 
             const payload = { ...talentData, companyId };
-            return request('/talent', {
+            return request('/api/talent', {
                 method: 'POST',
                 body: JSON.stringify(payload),
             });
@@ -103,7 +103,7 @@ const ApiService = (function () {
             if (!talentData.id) return Promise.reject('更新人才时缺少ID');
 
             const payload = { ...talentData, companyId };
-            return request('/talent', {
+            return request('/api/talent', {
                 method: 'PUT',
                 body: JSON.stringify(payload),
             });
@@ -115,7 +115,7 @@ const ApiService = (function () {
          * @returns {Promise<boolean>}
          */
         removeTalent: function (talentId) {
-            return request(`/talent/${talentId}`, {
+            return request(`/api/talent/${talentId}`, {
                 method: 'DELETE',
             });
         },
@@ -126,7 +126,7 @@ const ApiService = (function () {
          * @returns {Promise<object>}
          */
         getTalentById: function (talentId) {
-            return request(`/talent/${talentId}`);
+            return request(`/api/talent/${talentId}`);
         },
 
         // 新增：对外暴露通用 request 方法，供各个视图统一调用
@@ -138,4 +138,4 @@ const ApiService = (function () {
 
 // 导出到全局作用域，并暴露 API_BASE 方便其他脚本共用
 window.ApiService = ApiService;
-window.API_BASE = '/api';
+window.API_BASE = '';
