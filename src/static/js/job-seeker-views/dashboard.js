@@ -1,5 +1,6 @@
-const RESUME_API_BASE = 'http://124.71.101.139:10085/api/resume';
-const USER_API_BASE = 'http://124.71.101.139:10085/api/user';
+const RESUME_API_BASE = `${window.API_BASE || '/api'}/resume`;
+const USER_API_BASE = `${window.API_BASE || '/api'}/user`;
+const USER_PASSWORD_API_BASE = userId => `${window.API_BASE || '/api'}/user/${encodeURIComponent(userId)}/password`;
 
 document.addEventListener('DOMContentLoaded', () => {
     const currentUser = Auth.getCurrentUser();
@@ -113,6 +114,36 @@ async function fetchUserResumesApi(userId) {
         return { success: true, data: json.data || [] };
     } catch (e) {
         console.error('获取简历列表异常:', e);
+        return { success: false, message: '请求异常，请稍后重试' };
+    }
+}
+
+// 修改密码 API 封装，供 profile 视图使用
+async function updateUserPasswordApi(payload) {
+    const currentUser = Auth.getCurrentUser();
+    if (!currentUser || !currentUser.userId) {
+        return { success: false, message: '未登录或用户信息缺失' };
+    }
+    try {
+        const resp = await fetch(`${USER_PASSWORD_API_BASE(currentUser.userId)}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!resp.ok) {
+            const errorText = await resp.text();
+            return { success: false, message: `网络错误: ${resp.status} ${errorText}` };
+        }
+
+        const json = await resp.json();
+        if (json.code !== 200) {
+            return { success: false, message: json.message || '修改密码失败' };
+        }
+
+        return { success: true, message: json.message || '修改密码成功' };
+    } catch (e) {
+        console.error('修改密码异常:', e);
         return { success: false, message: '请求异常，请稍后重试' };
     }
 }

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企业管理员中心 - 招聘系统</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/components/card.css">
+    <style>
+        body {
+            -webkit-text-size-adjust: 100%;
+        }
+        .content-layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 24px;
+            margin-top: 20px;
+            margin-bottom: 32px;
+        }
+        @media (max-width: 992px) {
+            .content-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        .main-content-area {
+            min-height: 500px;
+            background-color: #f3f4f6;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="container nav-content">
+        <div class="nav-logo">
+            <a href="index.html" class="btn btn-sm" style="margin-right: 15px;">返回首页</a>
+            <h1>招聘系统 - 企业管理员</h1>
+        </div>
+        <div class="nav-user">
+            <span id="user-greeting">欢迎，企业管理员</span>
+            <button class="btn logout-btn" onclick="handleLogout()">退出</button>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="content-layout">
+        <aside class="sidebar">
+            <h3>管理中心</h3>
+            <nav class="sidebar-nav">
+                <a href="#" class="active" data-tab="manage">职位管理</a>
+                <a href="#" data-tab="post">发布职位</a>
+                <a href="#" data-tab="applicants">申请人管理</a>
+                <a href="#" data-tab="talent">人才库</a>
+                <a href="#" data-tab="company">公司信息</a>
+                <a href="#" data-tab="profile">账号与安全</a>
+            </nav>
+        </aside>
+        <main class="main-content main-content-area">
+            <div id="manage-tab" class="tab-content active"></div>
+            <div id="post-tab" class="tab-content"></div>
+            <div id="applicants-tab" class="tab-content"></div>
+            <div id="talent-tab" class="tab-content"></div>
+            <div id="company-tab" class="tab-content"></div>
+            <div id="profile-tab" class="tab-content"></div>
+        </main>
+    </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/recruitment-api.js"></script>
+<script src="js/employer-views/dashboard.js"></script>
+<script src="js/employer-views/job-manage-view.js"></script>
+<script src="js/employer-views/job-post-view.js"></script>
+<script src="js/employer-views/applicants-view.js"></script>
+<script src="js/employer-views/talent-view.js"></script>
+<script src="js/employer-views/company-view.js"></script>
+<script src="js/employer-views/profile-view.js"></script>
+</body>
+</html>
